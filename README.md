@@ -2,7 +2,7 @@
 
 ## LOGO
 
-  ![](logos/rlogo.png)
+  ![](img/logo/logo.png)
 
 **Descripción del logo:**  
 
@@ -11,10 +11,10 @@ El logo representa una **chincheta de ubicación** sobre una **montaña**, simbo
 ## Integrantes
 
 - **David Gragera Fernández** — DNI: 80085386F  
-  ![Foto carnet David](fotos_carne/rDavid.png)
+  ![Foto carnet David](img/carne/david.png)
 
 - **Shunya Zhan** — DNI: Y1346365M  
-  ![Foto carnet Shunya](fotos_carne/rShunya.png)
+  ![Foto carnet Shunya](img/carne/shunya.png)
 
 ## Eslogan
 
