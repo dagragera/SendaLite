@@ -27,6 +27,7 @@ Aplicación web minimalista para amantes de la montaña y el senderismo en gener
 ## Descripción
 
 La idea es que nuestra app, **SendaLite**, sea una aplicación web ligera y minimalista para descubrir y compartir rutas al aire libre, ya sea montaña o senderos.  
+
 Permitirá a los usuarios:
 
 - Consultar rutas clasificadas por **dificultad** (fácil, media, difícil).  
