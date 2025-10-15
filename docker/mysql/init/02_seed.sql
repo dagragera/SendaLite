@@ -1,0 +1,1 @@
+-- (Opcional) añade docker/mysql/init/02_seed.sql con datos de prueba si quieres.
