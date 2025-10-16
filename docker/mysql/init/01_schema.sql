@@ -1,4 +1,6 @@
 -- Schema básico SendaLite (MySQL 8)
+-- Crea todas las tablas necesarias para la aplicación
+USE sendalite;
 
 CREATE TABLE IF NOT EXISTS usuario (
                                        id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -13,7 +15,7 @@ CREATE TABLE IF NOT EXISTS ruta (
                                     id BIGINT PRIMARY KEY AUTO_INCREMENT,
                                     titulo VARCHAR(100) NOT NULL,
     resumen TEXT,
-    dificultad ENUM('F','M','D') NOT NULL,
+    dificultad ENUM('F','M','D') NOT NULL, -- F: fácil, M: media, D: difícil
     distancia_km DECIMAL(6,2) NOT NULL,
     desnivel_m INT,
     tiempo_estimado_min INT,

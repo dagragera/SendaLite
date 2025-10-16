@@ -4,19 +4,28 @@ services:
     container_name: sendalite-mysql
     restart: unless-stopped
     environment:
+      TZ: Europe/Madrid
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-sendalite}
       MYSQL_USER: ${MYSQL_USER:-sendalite}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sendalite}
+      # Evita warnings de tz al inicializar
+      MYSQL_INITDB_SKIP_TZINFO: "1"
     ports:
       - "3306:3306"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      # Comprueba que MySQL responde a un SELECT con root
+      test: ["CMD-SHELL", "mysql -uroot -p${MYSQL_ROOT_PASSWORD:-root} -e 'SELECT 1' >/dev/null 2>&1"]
       interval: 5s
       timeout: 5s
+      start_period: 25s   # da margen para crear BD y ejecutar /docker-entrypoint-initdb.d
       retries: 20
 
   adminer:
