@@ -1,63 +1,56 @@
--- Schema básico SendaLite (MySQL 8)
--- Crea todas las tablas necesarias para la aplicación
+-- Esquema adaptado a las entidades Java
 USE sendalite;
 
 CREATE TABLE IF NOT EXISTS usuario (
-                                       id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                                       nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    hash_password VARCHAR(255) NOT NULL,
-    avatar_url VARCHAR(255),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                       id_usuario BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                       email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    avatar VARCHAR(255),
+    fecha_registro DATE NOT NULL,
+    activo BOOLEAN NOT NULL
     );
 
 CREATE TABLE IF NOT EXISTS ruta (
-                                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                    id_ruta BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                    id_autor BIGINT NOT NULL,
                                     titulo VARCHAR(100) NOT NULL,
-    resumen TEXT,
-    dificultad ENUM('F','M','D') NOT NULL, -- F: fácil, M: media, D: difícil
-    distancia_km DECIMAL(6,2) NOT NULL,
+    descripcion TEXT,
+    dificultad ENUM('FACIL','MEDIA','DIFICIL') NOT NULL,
+    distancia_km DECIMAL(5,2),
     desnivel_m INT,
     tiempo_estimado_min INT,
-    tipo_actividad VARCHAR(50),
-    geojson MEDIUMTEXT, -- o lat/lon si no usáis trazado
-    autor_id BIGINT NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    puntuacion_media_cache DECIMAL(4,2),
-    CONSTRAINT fk_ruta_autor FOREIGN KEY (autor_id) REFERENCES usuario(id)
+    tipo_actividad ENUM('SENDERISMO','CICLISMO','ESCALADA','CORRER','OTRO') NOT NULL,
+    ubicacion VARCHAR(255),
+    coordenadas VARCHAR(255),
+    fotos TEXT,
+    etiquetas TEXT,
+    fecha_creacion DATE NOT NULL,
+    fecha_actualizacion DATE,
+    activa BOOLEAN NOT NULL,
+    CONSTRAINT fk_ruta_autor FOREIGN KEY (id_autor) REFERENCES usuario(id_usuario)
+    );
+
+CREATE TABLE IF NOT EXISTS comentario (
+                                          id_comentario BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                          id_usuario BIGINT NOT NULL,
+                                          id_ruta BIGINT NOT NULL,
+                                          texto TEXT NOT NULL,
+                                          fecha_comentario DATE NOT NULL,
+                                          fecha_edicion DATE,
+                                          CONSTRAINT fk_comentario_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    CONSTRAINT fk_comentario_ruta FOREIGN KEY (id_ruta) REFERENCES ruta(id_ruta)
     );
 
 CREATE TABLE IF NOT EXISTS valoracion (
-                                          id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                                          usuario_id BIGINT NOT NULL,
-                                          ruta_id BIGINT NOT NULL,
-                                          valor TINYINT NOT NULL CHECK (valor BETWEEN 1 AND 10),
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT uq_valor UNIQUE (usuario_id, ruta_id),
-    CONSTRAINT fk_valor_user FOREIGN KEY (usuario_id) REFERENCES usuario(id),
-    CONSTRAINT fk_valor_ruta FOREIGN KEY (ruta_id) REFERENCES ruta(id)
+                                          id_valoracion BIGINT PRIMARY KEY AUTO_INCREMENT,
+                                          id_usuario BIGINT NOT NULL,
+                                          id_ruta BIGINT NOT NULL,
+                                          puntuacion TINYINT NOT NULL CHECK (puntuacion BETWEEN 1 AND 10),
+    fecha_valoracion DATE NOT NULL,
+    CONSTRAINT uq_valoracion UNIQUE (id_usuario, id_ruta),
+    CONSTRAINT fk_valoracion_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    CONSTRAINT fk_valoracion_ruta FOREIGN KEY (id_ruta) REFERENCES ruta(id_ruta)
     );
 
-CREATE TABLE IF NOT EXISTS favorito (
-                                        usuario_id BIGINT NOT NULL,
-                                        ruta_id BIGINT NOT NULL,
-                                        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                        PRIMARY KEY (usuario_id, ruta_id),
-    CONSTRAINT fk_fav_user FOREIGN KEY (usuario_id) REFERENCES usuario(id),
-    CONSTRAINT fk_fav_ruta FOREIGN KEY (ruta_id) REFERENCES ruta(id)
-    );
-
-CREATE TABLE IF NOT EXISTS etiqueta (
-                                        id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                                        nombre VARCHAR(50) NOT NULL UNIQUE
-    );
-
-CREATE TABLE IF NOT EXISTS ruta_etiqueta (
-                                             ruta_id BIGINT NOT NULL,
-                                             etiqueta_id BIGINT NOT NULL,
-                                             PRIMARY KEY (ruta_id, etiqueta_id),
-    CONSTRAINT fk_re_ruta FOREIGN KEY (ruta_id) REFERENCES ruta(id),
-    CONSTRAINT fk_re_tag FOREIGN KEY (etiqueta_id) REFERENCES etiqueta(id)
-    );
+-- Si usas favoritos, etiquetas, etc. puedes añadir las tablas extra aquí
