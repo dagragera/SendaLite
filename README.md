@@ -105,6 +105,9 @@ Motor de búsqueda con varios criterios:
 - Marcar ruta como favorita.  
 - Comentarios en rutas.
 
+## Diagrama Entidad - Relación
+![](img/entidad_relacion_sendalite.jpeg)
+
 ## Arrancar la base de datos con Docker (MySQL)
 
 Este repositorio incluye un `docker-compose.yml` preparado para levantar una instancia de MySQL y Adminer para administración.
