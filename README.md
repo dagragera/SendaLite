@@ -103,4 +103,52 @@ Motor de búsqueda con varios criterios:
 - Ver rutas del propio usuario (**Mi cuenta**).  
 - Gestión básica de errores (404, 500) y mensajes de validación.  
 - Marcar ruta como favorita.  
-- Comentarios en rutas.  
+- Comentarios en rutas.
+
+## Arrancar la base de datos con Docker (MySQL)
+
+Este repositorio incluye un `docker-compose.yml` preparado para levantar una instancia de MySQL y Adminer para administración.
+
+Pasos rápidos:
+
+1. Arrancar los servicios:
+
+   docker compose up -d
+
+   (o `docker-compose up -d` si tu versión de Docker lo requiere).
+
+2. Variables por defecto (fijadas en `docker-compose.yml`):
+
+   - MYSQL_DATABASE=sendalite
+   - MYSQL_USER=sendalite
+   - MYSQL_PASSWORD=sendalite
+   - MYSQL_ROOT_PASSWORD=root
+
+3. El directorio `docker/mysql/init/` contiene los scripts `01_schema.sql` y `02_seed.sql` que se ejecutarán en el primer arranque y crearán la estructura y datos iniciales.
+
+4. Para acceder a la base de datos desde Adminer: abre http://localhost:8081 y conéctate a `sendalite` usando las credenciales anteriores.
+
+Nota: la aplicación por defecto (archivo `src/main/resources/application.properties`) está configurada para MySQL en `jdbc:mysql://localhost:3306/sendalite`.
+
+## Ejecutar tests
+
+- Los tests unitarios/DB usan H2 embebida (`@DataJpaTest`) por lo que no es necesario tener Docker corriendo para ejecutar `mvn test`.
+
+- Ejecutar la suite desde la raíz del proyecto con el wrapper de Maven:
+
+```sh
+./mvnw test
+```
+
+o con Maven instalado:
+
+```sh
+mvn test
+```
+
+- Si quieres ejecutar la aplicación contra la base de datos MySQL arrancada con Docker, arranca los contenedores y luego lanza la aplicación (por ejemplo desde tu IDE) usando las credenciales del `application.properties`.
+
+## Notas finales
+
+- He añadido scripts de inicialización en `docker/mysql/init/` y un `src/main/resources/data.sql` con ejemplos que se pueden usar para desarrollo.
+- Si queréis usar PostgreSQL en lugar de MySQL, puedo añadir un `docker-compose.postgres.yml` y un `application-dev.properties` alternativo.
