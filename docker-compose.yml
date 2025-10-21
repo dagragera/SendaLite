@@ -20,6 +20,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     healthcheck:
       # Comprueba que MySQL responde a un SELECT con root
       test: ["CMD-SHELL", "mysql -uroot -p${MYSQL_ROOT_PASSWORD:-root} -e 'SELECT 1' >/dev/null 2>&1"]

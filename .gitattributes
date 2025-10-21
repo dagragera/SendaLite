@@ -1,2 +1,5 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# Forzar UTF-8 en archivos de texto importantes
+*.sql text working-tree-encoding=UTF-8
+*.properties text working-tree-encoding=UTF-8
+*.md text working-tree-encoding=UTF-8
+
