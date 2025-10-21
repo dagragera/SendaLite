@@ -127,7 +127,7 @@ Pasos rápidos:
    - MYSQL_PASSWORD=sendalite
    - MYSQL_ROOT_PASSWORD=root
 
-3. El directorio `docker/mysql/init/` contiene los scripts `01_schema.sql` y `02_seed.sql` que se ejecutarán en el primer arranque y crearán la estructura y datos iniciales.
+3. El directorio `docker/mysql/init/` contiene los scripts `01_schema.sql` y `02_seed.sql` que se ejecutarán en el primer arranque y crearán la estructura y datos iniciales. También hay un archivo my.cnf para configurar la base de datos (acentos, ñ).
 
 4. Para acceder a la base de datos desde Adminer: abre http://localhost:8081 y conéctate a `sendalite` usando las credenciales anteriores.
 
