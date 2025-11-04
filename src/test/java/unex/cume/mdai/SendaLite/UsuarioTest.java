@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,13 +19,22 @@ import unex.cume.mdai.SendaLite.model.Ruta;
 import unex.cume.mdai.SendaLite.model.Comentario;
 import unex.cume.mdai.SendaLite.model.Dificultad;
 import unex.cume.mdai.SendaLite.model.TipoActividad;
+import unex.cume.mdai.SendaLite.service.UsuarioService;
+import unex.cume.mdai.SendaLite.service.RutaService;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
+@Import({UsuarioService.class, RutaService.class})
 public class UsuarioTest {
 
 	@Autowired
 	private TestEntityManager entityManager;
+
+	@Autowired
+	private UsuarioService usuarioService;
+
+	@Autowired
+	private RutaService rutaService;
 
 	@Test
 	void testPersistenciaEnCascadaDeRutaAComentario() {
@@ -36,7 +46,7 @@ public class UsuarioTest {
 		user.setNombre("Autor Prueba");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		// Crear ruta y asignar autor
 		Ruta ruta = new Ruta();
@@ -58,8 +68,8 @@ public class UsuarioTest {
 		ruta.getComentarios().add(c);
 
 		// Persistir la ruta; los comentarios deben persistirse por cascade
-		entityManager.persist(ruta);
-		entityManager.flush();
+		rutaService.anadirRuta(ruta);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		// Comprobar que el comentario se guardó
@@ -80,7 +90,7 @@ public class UsuarioTest {
 		user.setNombre("Autor Prueba 2");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		// Crear ruta con comentario y persistir
 		Ruta ruta = new Ruta();
@@ -100,8 +110,8 @@ public class UsuarioTest {
 		c1.setRuta(ruta);
 		ruta.getComentarios().add(c1);
 
-		entityManager.persist(ruta);
-		entityManager.flush();
+		rutaService.anadirRuta(ruta);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		// Recuperar ruta, eliminarla y comprobar que los comentarios también se eliminan
@@ -112,8 +122,8 @@ public class UsuarioTest {
 		Long rutaId = persistedRuta.getIdRuta();
 
 		// eliminar
-		entityManager.remove(persistedRuta);
-		entityManager.flush();
+		rutaService.eliminarRuta(persistedRuta);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		// No debe quedar ningún comentario para esa ruta
@@ -132,8 +142,8 @@ public class UsuarioTest {
 		u.setNombre("Basic User");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
-		entityManager.persist(u);
-		entityManager.flush();
+		usuarioService.anadirUsuario(u);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		List<Usuario> found = entityManager.getEntityManager()
@@ -152,16 +162,16 @@ public class UsuarioTest {
 		u.setNombre("Del User");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
-		entityManager.persist(u);
-		entityManager.flush();
+		usuarioService.anadirUsuario(u);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		Usuario persisted = entityManager.getEntityManager()
 				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
 				.setParameter("e", "deluser@example.com")
 				.getSingleResult();
-		entityManager.remove(persisted);
-		entityManager.flush();
+		usuarioService.eliminarUsuario(persisted);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		List<Usuario> after = entityManager.getEntityManager()
@@ -179,12 +189,13 @@ public class UsuarioTest {
 		u.setNombre("Original Name");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
-		entityManager.persist(u);
-		entityManager.flush();
+		usuarioService.anadirUsuario(u);
+		entityManager.getEntityManager().flush();
 
-		// modificar mientras está gestionado
+		// modificar mediante servicio
 		u.setNombre("Nombre Modificado");
-		entityManager.flush();
+		usuarioService.modificarUsuario(u);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		Usuario found = entityManager.getEntityManager()

@@ -2,10 +2,7 @@ package unex.cume.mdai.SendaLite.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.DoubleSummaryStatistics;
+
 import unex.cume.mdai.SendaLite.model.Valoracion;
 import unex.cume.mdai.SendaLite.model.Ruta;
 import unex.cume.mdai.SendaLite.model.Usuario;
@@ -13,28 +10,63 @@ import unex.cume.mdai.SendaLite.repository.ValoracionRepository;
 import unex.cume.mdai.SendaLite.repository.RutaRepository;
 import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 @Service
-@Transactional
 public class ValoracionService {
 
-    private final ValoracionRepository valorRepo;
-    private final RutaRepository rutaRepo;
-    private final UsuarioRepository usuarioRepo;
+    private final ValoracionRepository valoracionRepository;
+    private final RutaRepository rutaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public ValoracionService(ValoracionRepository valorRepo, RutaRepository rutaRepo, UsuarioRepository usuarioRepo) {
-        this.valorRepo = valorRepo;
-        this.rutaRepo = rutaRepo;
-        this.usuarioRepo = usuarioRepo;
+    public ValoracionService(ValoracionRepository valoracionRepository, RutaRepository rutaRepository, UsuarioRepository usuarioRepository) {
+        this.valoracionRepository = valoracionRepository;
+        this.rutaRepository = rutaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public Valoracion upsert(Long idRuta, Long idUsuario, int puntuacion) {
-        if (puntuacion < 1 || puntuacion > 10) {
-            throw new IllegalArgumentException("Puntuación debe estar entre 1 y 10");
-        }
-        Ruta ruta = rutaRepo.findById(idRuta).orElseThrow(() -> new IllegalArgumentException("Ruta no encontrada"));
-        Usuario usuario = usuarioRepo.findById(idUsuario).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+    @Transactional
+    public Valoracion anadirValoracion(Valoracion valoracion) {
+        if (valoracion == null) throw new IllegalArgumentException("Valoracion nula");
+        if (valoracion.getUsuario() == null || valoracion.getRuta() == null) throw new IllegalArgumentException("Usuario y ruta requeridos");
+        Optional<Valoracion> exists = valoracionRepository.findByUsuarioIdUsuarioAndRutaIdRuta(
+                valoracion.getUsuario().getIdUsuario(), valoracion.getRuta().getIdRuta());
+        if (exists.isPresent()) throw new IllegalArgumentException("Ya existe una valoración de este usuario para la ruta");
+        if (valoracion.getFechaValoracion() == null) valoracion.setFechaValoracion(LocalDate.now());
+        return valoracionRepository.save(valoracion);
+    }
 
-        Optional<Valoracion> existing = valorRepo.findByUsuarioIdUsuarioAndRutaIdRuta(idUsuario, idRuta);
+    @Transactional
+    public Valoracion modificarValoracion(Valoracion valoracion) {
+        if (valoracion == null || valoracion.getIdValoracion() == null) throw new IllegalArgumentException("Valoracion o id nulo");
+        // asegurar persistencia inmediata en tests
+        return valoracionRepository.saveAndFlush(valoracion);
+    }
+
+    @Transactional
+    public void eliminarValoracion(Valoracion valoracion) {
+        valoracionRepository.delete(valoracion);
+    }
+
+    @Transactional
+    public List<Valoracion> listarPorRuta(Long idRuta) {
+        return valoracionRepository.findByRutaIdRuta(idRuta);
+    }
+
+    @Transactional
+    public Optional<Valoracion> buscarPorId(Long id) {
+        return valoracionRepository.findById(id);
+    }
+
+    // Wrappers y utilidades esperadas por controller
+    @Transactional
+    public Valoracion upsert(Long rutaId, Long usuarioId, int puntuacion) {
+        if (rutaId == null || usuarioId == null) throw new IllegalArgumentException("RutaId y UsuarioId requeridos");
+        Ruta ruta = rutaRepository.findById(rutaId).orElseThrow(() -> new IllegalArgumentException("Ruta no encontrada: " + rutaId));
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + usuarioId));
+        Optional<Valoracion> existing = valoracionRepository.findByUsuarioIdUsuarioAndRutaIdRuta(usuarioId, rutaId);
         Valoracion v;
         if (existing.isPresent()) {
             v = existing.get();
@@ -47,22 +79,25 @@ public class ValoracionService {
             v.setPuntuacion(puntuacion);
             v.setFechaValoracion(LocalDate.now());
         }
-        return valorRepo.save(v);
+        return valoracionRepository.save(v);
     }
 
-    public double averageForRuta(Long idRuta) {
-        List<Valoracion> list = valorRepo.findByRutaIdRuta(idRuta);
+    @Transactional
+    public List<Valoracion> listByRuta(Long rutaId) {
+        return listarPorRuta(rutaId);
+    }
+
+    @Transactional
+    public double averageForRuta(Long rutaId) {
+        List<Valoracion> list = listarPorRuta(rutaId);
         if (list.isEmpty()) return 0.0;
-        DoubleSummaryStatistics stats = list.stream().mapToDouble(Valoracion::getPuntuacion).summaryStatistics();
-        return stats.getAverage();
+        double sum = 0.0;
+        for (Valoracion v : list) sum += v.getPuntuacion();
+        return sum / list.size();
     }
 
-    public List<Valoracion> listByRuta(Long idRuta) {
-        return valorRepo.findByRutaIdRuta(idRuta);
-    }
-
-    public void delete(Long idValoracion) {
-        valorRepo.deleteById(idValoracion);
+    @Transactional
+    public void delete(Long id) {
+        valoracionRepository.findById(id).ifPresent(valoracionRepository::delete);
     }
 }
-

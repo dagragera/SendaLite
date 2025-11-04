@@ -2,55 +2,93 @@ package unex.cume.mdai.SendaLite.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+
 import unex.cume.mdai.SendaLite.model.Usuario;
 import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 @Service
-@Transactional
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepo;
+    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepo) {
-        this.usuarioRepo = usuarioRepo;
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario create(Usuario u) {
-        if (u.getEmail() == null || u.getEmail().isBlank()) {
-            throw new IllegalArgumentException("Email requerido");
-        }
-        if (usuarioRepo.findByEmail(u.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email ya registrado");
-        }
-        if (u.getFechaRegistro() == null) {
-            u.setFechaRegistro(LocalDate.now());
-        }
-        return usuarioRepo.save(u);
+    @Transactional
+    public Usuario anadirUsuario(Usuario usuario) {
+        if (usuario == null) throw new IllegalArgumentException("Usuario nulo");
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) throw new IllegalArgumentException("Email requerido");
+        Optional<Usuario> exists = usuarioRepository.findByEmail(usuario.getEmail());
+        if (exists.isPresent()) throw new IllegalArgumentException("Email ya registrado: " + usuario.getEmail());
+        if (usuario.getFechaRegistro() == null) usuario.setFechaRegistro(LocalDate.now());
+        return usuarioRepository.save(usuario);
     }
 
+    // Métodos compatibles con controller
+    @Transactional
+    public Usuario create(Usuario usuario) {
+        return anadirUsuario(usuario);
+    }
+
+    @Transactional
     public List<Usuario> listAll() {
-        return usuarioRepo.findAll();
+        return usuarioRepository.findAll();
     }
 
+    @Transactional
     public Optional<Usuario> findById(Long id) {
-        return usuarioRepo.findById(id);
+        return usuarioRepository.findById(id);
     }
 
-    public Usuario update(Long id, Usuario updated) {
-        return usuarioRepo.findById(id).map(existing -> {
-            existing.setNombre(updated.getNombre());
-            existing.setAvatar(updated.getAvatar());
-            existing.setActivo(updated.isActivo());
-            // no actualizamos email/password aquí por simplicidad
-            return usuarioRepo.save(existing);
-        }).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+    @Transactional
+    public Usuario update(Long id, Usuario usuario) {
+        if (id == null || usuario == null) throw new IllegalArgumentException("Id o usuario nulo");
+        usuario.setIdUsuario(id);
+        return modificarUsuario(usuario);
     }
 
+    @Transactional
     public void delete(Long id) {
-        usuarioRepo.deleteById(id);
+        eliminarUsuarioPorId(id);
+    }
+
+    @Transactional
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    @Transactional
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<Usuario> buscarUsuarioPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+    @Transactional
+    public Usuario modificarUsuario(Usuario usuario) {
+        if (usuario == null || usuario.getIdUsuario() == null) throw new IllegalArgumentException("Usuario o id nulo");
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void eliminarUsuario(Usuario usuario) {
+        usuarioRepository.delete(usuario);
+    }
+
+    @Transactional
+    public boolean eliminarUsuarioPorId(Long idUsuario) {
+        if (idUsuario == null) return false;
+        Optional<Usuario> u = usuarioRepository.findById(idUsuario);
+        if (u.isEmpty()) return false;
+        usuarioRepository.delete(u.get());
+        return true;
     }
 }
-

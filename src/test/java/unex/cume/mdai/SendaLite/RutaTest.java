@@ -11,19 +11,33 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 
 import unex.cume.mdai.SendaLite.model.Ruta;
 import unex.cume.mdai.SendaLite.model.Usuario;
 import unex.cume.mdai.SendaLite.model.Valoracion;
 import unex.cume.mdai.SendaLite.model.Dificultad;
 import unex.cume.mdai.SendaLite.model.TipoActividad;
+import unex.cume.mdai.SendaLite.service.RutaService;
+import unex.cume.mdai.SendaLite.service.UsuarioService;
+import unex.cume.mdai.SendaLite.service.ValoracionService;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
+@Import({RutaService.class, UsuarioService.class, ValoracionService.class})
 public class RutaTest {
 
 	@Autowired
 	private TestEntityManager entityManager;
+
+	@Autowired
+	private RutaService rutaService;
+
+	@Autowired
+	private UsuarioService usuarioService;
+
+	@Autowired
+	private ValoracionService valoracionService;
 
 	@Test
 	void testPersistirRutaConValoraciones() {
@@ -33,7 +47,7 @@ public class RutaTest {
 		user.setNombre("Autor Valoracion");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta con valoraciones");
@@ -44,16 +58,16 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new ArrayList<>());
+		rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(8);
 		v.setFechaValoracion(LocalDate.now());
 		v.setUsuario(user);
 		v.setRuta(ruta);
-		ruta.getValoraciones().add(v);
+		valoracionService.anadirValoracion(v);
 
-		entityManager.persist(ruta);
-		entityManager.flush();
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		List<Valoracion> valoraciones = entityManager.getEntityManager()
@@ -71,7 +85,7 @@ public class RutaTest {
 		user.setNombre("Autor Del");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta a eliminar");
@@ -82,16 +96,15 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new ArrayList<>());
+		rutaService.anadirRuta(ruta);
 
 		Valoracion v1 = new Valoracion();
 		v1.setPuntuacion(7);
 		v1.setFechaValoracion(LocalDate.now());
 		v1.setUsuario(user);
 		v1.setRuta(ruta);
-		ruta.getValoraciones().add(v1);
-
-		entityManager.persist(ruta);
-		entityManager.flush();
+		valoracionService.anadirValoracion(v1);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		Ruta persisted = entityManager.getEntityManager()
@@ -100,8 +113,8 @@ public class RutaTest {
 				.getSingleResult();
 		Long rutaId = persisted.getIdRuta();
 
-		entityManager.remove(persisted);
-		entityManager.flush();
+		rutaService.eliminarRuta(persisted);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		List<Valoracion> after = entityManager.getEntityManager()
@@ -119,7 +132,7 @@ public class RutaTest {
 		user.setNombre("Basic Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Basica");
@@ -129,8 +142,8 @@ public class RutaTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		entityManager.persist(ruta);
-		entityManager.flush();
+		rutaService.anadirRuta(ruta);
+		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
 		List<Ruta> found = entityManager.getEntityManager()
@@ -149,7 +162,7 @@ public class RutaTest {
 		user.setNombre("Del Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta a borrar Base");
@@ -159,15 +172,15 @@ public class RutaTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		entityManager.persist(ruta);
-		entityManager.flush();
+		rutaService.anadirRuta(ruta);
+		entityManager.getEntityManager().flush();
 		Long id = ruta.getIdRuta();
 
 		entityManager.clear();
 
 		Ruta toRemove = entityManager.getEntityManager().find(Ruta.class, id);
-		entityManager.remove(toRemove);
-		entityManager.flush();
+		rutaService.eliminarRuta(toRemove);
+		entityManager.getEntityManager().flush();
 
 		Ruta shouldBeNull = entityManager.getEntityManager().find(Ruta.class, id);
 		assertThat(shouldBeNull).isNull();
@@ -181,7 +194,7 @@ public class RutaTest {
 		user.setNombre("Mod Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		entityManager.persist(user);
+		usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Original");
@@ -191,12 +204,12 @@ public class RutaTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		entityManager.persist(ruta);
-		entityManager.flush();
+		rutaService.anadirRuta(ruta);
+		entityManager.getEntityManager().flush();
 
-		// modificar mientras está gestionada
+		// modificar mediante servicio
 		ruta.setTitulo("Ruta Modificada");
-		entityManager.flush();
+		rutaService.modificarRuta(ruta);
 		Long id = ruta.getIdRuta();
 		entityManager.clear();
 
