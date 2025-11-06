@@ -155,3 +155,68 @@ mvn test
 
 - He añadido scripts de inicialización en `docker/mysql/init/` y un `src/main/resources/data.sql` con ejemplos que se pueden usar para desarrollo.
 - Si queréis usar PostgreSQL en lugar de MySQL, puedo añadir un `docker-compose.postgres.yml` y un `application-dev.properties` alternativo.
+
+## Entrega2: Acceso a datos
+
+**Referencia de entrega:** Tag: `entrega2` — Commit: `f00676a` — Fecha: `2025-11-04T19:40:30+01:00`
+
+Para la entrega de la práctica, se ha preparado un conjunto de datos de ejemplo y scripts de inicialización que permiten levantar la base de datos y cargar datos de prueba fácilmente.
+
+### Archivos incluidos
+
+- `docker/mysql/init/01_schema.sql`: script para crear la estructura de tablas.  
+- `docker/mysql/init/02_seed.sql`: script para cargar datos de prueba.  
+- `src/main/resources/data.sql`: datos de ejemplo adicionales.  
+
+### Instrucciones
+
+1. Asegúrate de tener Docker corriendo con la base de datos MySQL levantada. Consulta la sección anterior si tienes dudas.  
+2. Los scripts en `docker/mysql/init/` se ejecutan automáticamente en el primer arranque. Si ya has arrancado la base de datos antes, puedes reiniciarla para que se apliquen los cambios:  
+
+   ```sh
+   docker compose down
+   docker compose up -d
+   ```
+
+3. Accede a Adminer y verifica que las tablas y datos se han creado correctamente. Usa las credenciales habituales para conectar.  
+4. Los datos de ejemplo incluyen rutas, usuarios y valoraciones. Puedes usarlos para explorar la aplicación y realizar pruebas.
+
+### Artifacts y release
+
+- ZIP de la entrega: `entrega2.zip` (generado desde HEAD, en la raíz del proyecto).
+- Tag publicado en GitHub: `entrega2` (referencia: https://github.com/dagragera/SendaLite/releases/tag/entrega2 ).
+
+Notas rápidas para el profesor/ayudante:
+- Para inspeccionar el ZIP: descomprimir `entrega2.zip` y abrir el proyecto con IntelliJ o usar los comandos de Maven indicados en este README.
+
+Cómo ejecutar desde IntelliJ (Windows):
+1. File → Open... → seleccionar la carpeta raíz `SendaLite` y abrir como proyecto Maven.
+2. Esperar a que IntelliJ importe el proyecto y descargue dependencias.
+3. Para ejecutar los tests: Run → Run 'All Tests' o abrir la clase de test y hacer Run.
+4. Para ejecutar la aplicación: abrir la clase `src/main/java/unex/cume/mdai/SendaLite/SendaLiteApplication.java` y pulsar el botón Run (o Run 'SendaLiteApplication').
+
+Cómo ejecutar desde línea de comandos (Windows PowerShell / cmd.exe):
+
+- Ejecutar tests (sin Docker, usa H2 embebida):
+
+```powershell
+# PowerShell
+.\mvnw.cmd test
+```
+
+```cmd
+REM cmd.exe
+mvnw.cmd test
+```
+
+- Ejecutar la aplicación contra MySQL levantado con Docker:
+
+```powershell
+# PowerShell
+.\mvnw.cmd spring-boot:run
+```
+
+```cmd
+REM cmd.exe
+mvnw.cmd spring-boot:run
+```
