@@ -7,14 +7,21 @@ import java.util.List;
 import unex.cume.mdai.SendaLite.model.Usuario;
 import unex.cume.mdai.SendaLite.service.UsuarioService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
 
+    @Autowired
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
+        logger.info("UsuarioController inicializado");
     }
 
     @PostMapping
@@ -49,4 +56,3 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 }
-

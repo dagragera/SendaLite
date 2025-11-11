@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${usuario != null} ? ${usuario.nombre} : 'Usuario'">Usuario</title>
+</head>
+<body>
+<h1 th:text="${usuario != null} ? ${usuario.nombre} : 'Usuario no encontrado'">Usuario</h1>
+<div th:if="${usuario != null}">
+    <p><strong>Email:</strong> <span th:text="${usuario.email}">email</span></p>
+    <p><strong>Registrado:</strong> <span th:text="${usuario.fechaRegistro}">fecha</span></p>
+    <!-- Podríamos listar aquí sus rutas, comentarios y valoraciones si los servicios los proporcionan -->
+</div>
+<p><a href="/usuarios">Volver a Usuarios</a></p>
+</body>
+</html>
+

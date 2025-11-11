@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Nueva Ruta'">Ruta</title>
+</head>
+<body>
+<h1 th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Crear / Editar Ruta'">Crear / Editar Ruta</h1>
+<!-- Usar JS para enviar JSON al endpoint REST -->
+<div th:with="rutaId=${ruta != null} ? ${ruta.idRuta} : 0">
+    <label>Título: <input id="titulo" type="text" th:value="${ruta != null} ? ${ruta.titulo} : ''"/></label><br/>
+    <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''"></textarea></label><br/>
+    <label>Dificultad: <input id="dificultad" type="text" th:value="${ruta != null} ? ${ruta.dificultad} : ''"/></label><br/>
+    <label>Distancia (km): <input id="distancia" type="text" th:value="${ruta != null} ? ${ruta.distanciaKm} : ''"/></label><br/>
+    <label>Autor:
+        <select id="autor">
+            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}" th:selected="${ruta != null and ruta.autor != null and ruta.autor.idUsuario == u.idUsuario}"></option>
+        </select>
+    </label><br/>
+    <button onclick="enviarRuta()">Guardar</button>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var rutaId = /*[[${ruta != null and ruta.idRuta != null ? ruta.idRuta : 0}]]*/ 0;
+    /*]]>*/
+
+    function enviarRuta() {
+        var payload = {
+            titulo: document.getElementById('titulo').value,
+            descripcion: document.getElementById('descripcion').value,
+            dificultad: document.getElementById('dificultad').value,
+            distanciaKm: document.getElementById('distancia').value,
+            autor: { idUsuario: parseInt(document.getElementById('autor').value) }
+        };
+
+        var method = rutaId && rutaId > 0 ? 'PUT' : 'POST';
+        var url = '/api/rutas' + (method === 'PUT' ? '/' + rutaId : '');
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(r => {
+            if (r.ok) {
+                // ir al detalle de la ruta recién creada/actualizada
+                r.json().then(obj => {
+                    var id = obj.idRuta || rutaId;
+                    window.location.href = '/rutas/' + id;
+                });
+            } else {
+                r.text().then(t => alert('Error: ' + t));
+            }
+        }).catch(e => alert('Error de red: ' + e));
+    }
+</script>
+
+<p><a href="/">Volver a Rutas</a></p>
+</body>
+</html>

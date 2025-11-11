@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>SendaLite - Rutas</title>
+</head>
+<body>
+<nav>
+    <a href="/">Rutas</a> |
+    <a href="/usuarios">Usuarios</a> |
+    <a href="/rutas/nueva">Crear Ruta</a>
+</nav>
+<h1>Rutas disponibles</h1>
+<div>
+    <ul>
+        <li th:each="ruta : ${rutas}">
+            <a th:href="@{'/rutas/' + ${ruta.idRuta}}" th:text="${ruta.titulo}">Ruta</a>
+            <span th:text="${ruta.descripcion}">Descripción</span>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

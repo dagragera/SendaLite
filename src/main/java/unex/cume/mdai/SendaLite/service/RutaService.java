@@ -35,12 +35,27 @@ public class RutaService {
 
     @Transactional
     public List<Ruta> listAll() {
-        return rutaRepository.findAll();
+        // Usar fetch join para traer autor y evitar problema N+1
+        try {
+            return rutaRepository.findAllWithAutor();
+        } catch (Exception e) {
+            // fallback en caso de que la consulta no exista o falle
+            return rutaRepository.findAll();
+        }
     }
 
     @Transactional
     public Optional<Ruta> findById(Long id) {
         return rutaRepository.findById(id);
+    }
+
+    /**
+     * Devuelve una ruta con autor, comentarios y valoraciones ya inicializados.
+     * Usa la consulta con JOIN FETCH definida en el repository para evitar LazyInitializationException
+     */
+    @Transactional
+    public Optional<Ruta> buscarConDetalles(Long id) {
+        return rutaRepository.findByIdWithDetalles(id);
     }
 
     @Transactional
@@ -77,7 +92,12 @@ public class RutaService {
 
     @Transactional
     public List<Ruta> listarRutas() {
-        return rutaRepository.findAll();
+        // misma implementación que listAll(): intentar traer con autor
+        try {
+            return rutaRepository.findAllWithAutor();
+        } catch (Exception e) {
+            return rutaRepository.findAll();
+        }
     }
 
     @Transactional

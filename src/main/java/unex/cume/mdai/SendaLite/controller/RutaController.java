@@ -7,14 +7,21 @@ import java.util.List;
 import unex.cume.mdai.SendaLite.model.Ruta;
 import unex.cume.mdai.SendaLite.service.RutaService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/api/rutas")
 public class RutaController {
 
     private final RutaService rutaService;
+    private final Logger logger = LoggerFactory.getLogger(RutaController.class);
 
+    @Autowired
     public RutaController(RutaService rutaService) {
         this.rutaService = rutaService;
+        logger.info("RutaController inicializado");
     }
 
     @PostMapping
@@ -33,7 +40,18 @@ public class RutaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Ruta> get(@PathVariable Long id) {
-        return rutaService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        // Usar buscarConDetalles para traer autor, comentarios y valoraciones ya inicializados
+        return rutaService.buscarConDetalles(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Ruta> update(@PathVariable Long id, @RequestBody Ruta ruta) {
+        try {
+            Ruta updated = rutaService.modificarRuta(ruta);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -42,4 +60,3 @@ public class RutaController {
         return ResponseEntity.noContent().build();
     }
 }
-

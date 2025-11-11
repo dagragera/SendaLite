@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${ruta != null ? ruta.titulo : 'Ruta'}">Ruta</title>
+</head>
+<body>
+<h1 th:text="${ruta != null ? ruta.titulo : 'Ruta no encontrada'}">Ruta</h1>
+<div th:if="${ruta != null}">
+    <p><strong>Descripción:</strong> <span th:text="${ruta.descripcion}">Descripción</span></p>
+    <p><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></p>
+    <p><strong>Media valoraciones:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></p>
+
+    <h2>Comentarios</h2>
+    <ul>
+        <li th:each="c : ${comentarios}">
+            <strong th:text="${c.usuario.nombre}">Usuario</strong>:
+            <span th:text="${c.texto}">Texto</span>
+            <em th:text="${c.fechaComentario}">fecha</em>
+        </li>
+    </ul>
+
+    <h3>Añadir comentario</h3>
+    <form id="comentarioForm" onsubmit="return enviarComentario()">
+        <label for="usuario">Usuario:</label>
+        <select id="usuario" name="usuarioId">
+            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}"></option>
+        </select>
+        <br/>
+        <label for="texto">Texto:</label>
+        <input id="texto" name="texto" />
+        <button type="submit">Añadir</button>
+    </form>
+
+    <h2>Valoraciones</h2>
+    <ul>
+        <li th:each="v : ${valoraciones}">
+            <strong th:text="${v.usuario.nombre}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
+        </li>
+    </ul>
+
+    <h3>Añadir/Modificar valoración</h3>
+    <form id="valoracionForm" onsubmit="return enviarValoracion()">
+        <label for="usuarioVal">Usuario:</label>
+        <select id="usuarioVal" name="usuarioId">
+            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}"></option>
+        </select>
+        <br/>
+        <label for="puntuacion">Puntuación (1-10):</label>
+        <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" />
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var rutaId = [[${ruta.idRuta}]];
+        /*]]>*/
+
+        function enviarComentario() {
+            const usuarioId = document.getElementById('usuario').value;
+            const texto = document.getElementById('texto').value;
+            fetch('/api/rutas/' + rutaId + '/comentarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuarioId: usuarioId, texto: texto })
+            }).then(r => {
+                if (r.ok) location.reload(); else alert('Error al añadir comentario');
+            });
+            return false;
+        }
+
+        function enviarValoracion() {
+            const usuarioId = document.getElementById('usuarioVal').value;
+            const puntuacion = parseInt(document.getElementById('puntuacion').value);
+            fetch('/api/rutas/' + rutaId + '/valoraciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuarioId: usuarioId, puntuacion: puntuacion })
+            }).then(r => {
+                if (r.ok) location.reload(); else r.text().then(t => alert('Error: ' + t));
+            });
+            return false;
+        }
+    </script>
+</div>
+</body>
+</html>

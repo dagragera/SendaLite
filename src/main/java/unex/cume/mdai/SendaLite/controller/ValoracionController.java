@@ -8,14 +8,21 @@ import java.util.Map;
 import unex.cume.mdai.SendaLite.model.Valoracion;
 import unex.cume.mdai.SendaLite.service.ValoracionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/api/rutas/{rutaId}/valoraciones")
 public class ValoracionController {
 
     private final ValoracionService valoracionService;
+    private final Logger logger = LoggerFactory.getLogger(ValoracionController.class);
 
+    @Autowired
     public ValoracionController(ValoracionService valoracionService) {
         this.valoracionService = valoracionService;
+        logger.info("ValoracionController inicializado");
     }
 
     @PostMapping
@@ -43,4 +50,3 @@ public class ValoracionController {
         return ResponseEntity.noContent().build();
     }
 }
-

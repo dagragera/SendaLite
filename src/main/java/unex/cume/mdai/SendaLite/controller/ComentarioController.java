@@ -8,14 +8,21 @@ import java.util.Map;
 import unex.cume.mdai.SendaLite.model.Comentario;
 import unex.cume.mdai.SendaLite.service.ComentarioService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/api/rutas/{rutaId}/comentarios")
 public class ComentarioController {
 
     private final ComentarioService comentarioService;
+    private final Logger logger = LoggerFactory.getLogger(ComentarioController.class);
 
+    @Autowired
     public ComentarioController(ComentarioService comentarioService) {
         this.comentarioService = comentarioService;
+        logger.info("ComentarioController inicializado");
     }
 
     @PostMapping
@@ -48,4 +55,3 @@ public class ComentarioController {
         return ResponseEntity.noContent().build();
     }
 }
-

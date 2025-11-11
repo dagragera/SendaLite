@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties({"comentarios","valoraciones"})
 @Entity
 @Table(name = "ruta")
 public class Ruta {
@@ -62,9 +65,11 @@ public class Ruta {
     private boolean activa;
 
     // Relaciones con otras entidades
+    @JsonIgnore
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL)
     private java.util.List<Comentario> comentarios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL)
     private java.util.List<Valoracion> valoraciones;
 
@@ -198,6 +203,7 @@ public class Ruta {
         this.activa = activa;
     }
 
+    @JsonIgnore
     public List<Comentario> getComentarios() {
         return comentarios;
     }
@@ -206,6 +212,7 @@ public class Ruta {
         this.comentarios = comentarios;
     }
 
+    @JsonIgnore
     public List<Valoracion> getValoraciones() {
         return valoraciones;
     }

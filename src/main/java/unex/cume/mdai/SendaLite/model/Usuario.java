@@ -4,6 +4,7 @@ package unex.cume.mdai.SendaLite.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "usuario")
@@ -32,12 +33,15 @@ public class Usuario {
     private boolean activo;
 
     // Relaciones con otras entidades
+    @JsonIgnore
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
     private List<Ruta> rutas;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Comentario> comentarios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Valoracion> valoraciones;
 
