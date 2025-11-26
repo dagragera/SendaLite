@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import unex.cume.mdai.SendaLite.model.Ruta;
 import unex.cume.mdai.SendaLite.repository.RutaRepository;
+import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
+import unex.cume.mdai.SendaLite.model.Usuario;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,14 +17,24 @@ import java.util.Optional;
 public class RutaService {
 
     private final RutaRepository rutaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public RutaService(RutaRepository rutaRepository) {
+    public RutaService(RutaRepository rutaRepository, UsuarioRepository usuarioRepository) {
         this.rutaRepository = rutaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
     public Ruta anadirRuta(Ruta ruta) {
         if (ruta == null) throw new IllegalArgumentException("Ruta nula");
+        // Resolver autor por id si se ha enviado solo la referencia con id
+        if (ruta.getAutor() != null && ruta.getAutor().getIdUsuario() != null) {
+            Long idAutor = ruta.getAutor().getIdUsuario();
+            Usuario u = usuarioRepository.findById(idAutor).orElseThrow(() -> new IllegalArgumentException("Autor no encontrado: " + idAutor));
+            ruta.setAutor(u);
+        } else {
+            throw new IllegalArgumentException("Autor requerido");
+        }
         if (ruta.getFechaCreacion() == null) ruta.setFechaCreacion(LocalDate.now());
         return rutaRepository.save(ruta);
     }

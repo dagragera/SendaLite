@@ -16,7 +16,12 @@ public interface RutaRepository extends JpaRepository<Ruta, Long> {
     @Query("select r from Ruta r join fetch r.autor")
     List<Ruta> findAllWithAutor();
 
-    // Traer una ruta junto con autor, comentarios y valoraciones (detalle)
-    @Query("select distinct r from Ruta r left join fetch r.comentarios c left join fetch r.valoraciones v join fetch r.autor where r.idRuta = :id")
+    // Traer una ruta junto con autor, comentarios (y sus usuarios) y valoraciones (y sus usuarios)
+    @Query("select distinct r from Ruta r " +
+           "left join fetch r.comentarios c " +
+           "left join fetch c.usuario cu " +
+           "left join fetch r.valoraciones v " +
+           "left join fetch v.usuario vu " +
+           "join fetch r.autor where r.idRuta = :id")
     Optional<Ruta> findByIdWithDetalles(@Param("id") Long id);
 }

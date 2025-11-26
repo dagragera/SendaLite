@@ -3,7 +3,8 @@ package unex.cume.mdai.SendaLite.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -64,14 +65,14 @@ public class Ruta {
     @Column(nullable = false)
     private boolean activa;
 
-    // Relaciones con otras entidades
+    // Relaciones con otras entidades: usar Set en lugar de List para permitir múltiples fetch joins
     @JsonIgnore
-    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL)
-    private java.util.List<Comentario> comentarios;
+    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comentario> comentarios = new HashSet<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL)
-    private java.util.List<Valoracion> valoraciones;
+    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Valoracion> valoraciones = new HashSet<>();
 
     // Getters y setters
 
@@ -204,20 +205,20 @@ public class Ruta {
     }
 
     @JsonIgnore
-    public List<Comentario> getComentarios() {
+    public Set<Comentario> getComentarios() {
         return comentarios;
     }
 
-    public void setComentarios(List<Comentario> comentarios) {
+    public void setComentarios(Set<Comentario> comentarios) {
         this.comentarios = comentarios;
     }
 
     @JsonIgnore
-    public List<Valoracion> getValoraciones() {
+    public Set<Valoracion> getValoraciones() {
         return valoraciones;
     }
 
-    public void setValoraciones(List<Valoracion> valoraciones) {
+    public void setValoraciones(Set<Valoracion> valoraciones) {
         this.valoraciones = valoraciones;
     }
 }

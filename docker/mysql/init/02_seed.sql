@@ -7,21 +7,24 @@ SET CHARACTER SET 'utf8mb4';
 USE sendalite;
 
 -- Usuarios
-INSERT INTO usuario (email, password, nombre, avatar, fecha_registro, activo)
+INSERT INTO usuario (email, password, nombre, avatar, fecha_registro, activo, admin)
 VALUES
-    ('david@example.com', 'hash123', 'David Gragera', NULL, '2023-01-10', TRUE),
-    ('shunya@example.com', 'hash456', 'Shunya Zhan', NULL, '2023-02-15', TRUE),
-    ('laura@example.com', 'hash789', 'Laura Gomez', NULL, '2023-03-20', TRUE),
-    ('jose@example.com', 'hash001', 'José Piñero', NULL, '2023-04-01', TRUE),
-    ('monica@example.com', 'hash002', 'Mónica López', NULL, '2023-04-02', TRUE),
-    ('alberto@example.com', 'hash003', 'Alberto Ñúñez', NULL, '2023-04-03', TRUE),
-    ('ana@example.com', 'hash004', 'Ana María', NULL, '2023-04-04', TRUE),
-    ('carlos@example.com', 'hash005', 'Carlos Peña', NULL, '2023-04-05', TRUE);
+    ('admin@example.com', 'admin', 'Admin', NULL, '2023-01-10', TRUE, TRUE),
+    ('david@example.com', 'hash123', 'David Gragera', NULL, '2023-01-10', TRUE, FALSE),
+    ('shunya@example.com', 'hash456', 'Shunya Zhan', NULL, '2023-02-15', TRUE, FALSE),
+    ('laura@example.com', 'hash789', 'Laura Gomez', NULL, '2023-03-20', TRUE, FALSE),
+    ('jose@example.com', 'hash001', 'José Piñero', NULL, '2023-04-01', TRUE, FALSE),
+    ('monica@example.com', 'hash002', 'Mónica López', NULL, '2023-04-02', TRUE, FALSE),
+    ('alberto@example.com', 'hash003', 'Alberto Ñúñez', NULL, '2023-04-03', TRUE, FALSE),
+    ('ana@example.com', 'hash004', 'Ana María', NULL, '2023-04-04', TRUE, FALSE),
+    ('carlos@example.com', 'hash005', 'Carlos Peña', NULL, '2023-04-05', TRUE, FALSE);
+
+-- Si la BD ya existe y quieres aplicar la contraseña/texto plano ahora, ejecuta un UPDATE (ver instrucciones en README o en la respuesta).
 
 -- Rutas (aprox. 20 entradas)
 INSERT INTO ruta (id_autor, titulo, descripcion, dificultad, distancia_km, desnivel_m, tiempo_estimado_min, tipo_actividad, ubicacion, coordenadas, fotos, etiquetas, fecha_creacion, fecha_actualizacion, activa)
 VALUES
-    (1, 'Sendero del Águila', 'Ruta sencilla con vistas al valle.', 'FACIL', 5.2, 120, 90, 'SENDERISMO', 'Valle del Águila', '40.123,-5.123', NULL, 'mirador', '2023-04-01', NULL, TRUE),
+    (9, 'Sendero del Águila', 'Ruta sencilla con vistas al valle.', 'FACIL', 5.2, 120, 90, 'SENDERISMO', 'Valle del Águila', '40.123,-5.123', NULL, 'mirador', '2023-04-01', NULL, TRUE),
     (2, 'Cima del Dragón', 'Ascenso exigente con vistas espectaculares.', 'DIFICIL', 13.4, 900, 300, 'ESCALADA', 'Sierra del Dragón', '40.456,-5.456', NULL, 'montaña', '2023-04-10', NULL, TRUE),
     (3, 'Bosque Encantado', 'Camino entre árboles y pequeños arroyos.', 'MEDIA', 8.1, 350, 180, 'SENDERISMO', 'Bosque Encantado', '40.789,-5.789', NULL, 'bosque', '2023-04-15', NULL, TRUE),
     (4, 'Senda de la Peña', 'Tramo con rocas y buenas vistas del río.', 'MEDIA', 10.0, 420, 200, 'SENDERISMO', 'Peña Alta', '40.200,-5.200', NULL, 'peña', '2023-05-01', NULL, TRUE),
@@ -29,7 +32,7 @@ VALUES
     (6, 'Ascenso al Mirador', 'Corto pero con fuerte pendiente.', 'DIFICIL', 6.2, 500, 150, 'SENDERISMO', 'Mirador Norte', '40.220,-5.220', NULL, 'mirador', '2023-05-03', NULL, TRUE),
     (7, 'Camino de las Ánimas', 'Ruta nocturna recomendada con precaución.', 'MEDIA', 12.0, 300, 240, 'SENDERISMO', 'Cerro Negro', '40.230,-5.230', NULL, 'nocturna', '2023-05-04', NULL, TRUE),
     (8, 'Travesía del Roble', 'Paso por bosque y praderas abiertas.', 'MEDIA', 9.5, 200, 210, 'SENDERISMO', 'Valle Roble', '40.240,-5.240', NULL, 'bosque', '2023-05-05', NULL, TRUE),
-    (1, 'Camino del Agua', 'Sendero con varios arroyos y zonas húmedas.', 'FACIL', 7.0, 100, 150, 'SENDERISMO', 'Vega del Agua', '40.250,-5.250', NULL, 'agua', '2023-05-06', NULL, TRUE),
+    (9, 'Camino del Agua', 'Sendero con varios arroyos y zonas húmedas.', 'FACIL', 7.0, 100, 150, 'SENDERISMO', 'Vega del Agua', '40.250,-5.250', NULL, 'agua', '2023-05-06', NULL, TRUE),
     (2, 'Sierra de la Nube', 'Ruta larga con vistas panorámicas.', 'DIFICIL', 20.0, 1200, 480, 'SENDERISMO', 'Sierra Alta', '40.260,-5.260', NULL, 'panorámica', '2023-05-07', NULL, TRUE),
     (3, 'Pico del Halcón', 'Pequeña escalada y cresta aérea.', 'DIFICIL', 5.6, 650, 180, 'ESCALADA', 'Pico Halcón', '40.270,-5.270', NULL, 'escalada', '2023-05-08', NULL, TRUE),
     (4, 'Ruta de los Molinos', 'Recorrido con molinos restaurados.', 'FACIL', 4.2, 80, 70, 'SENDERISMO', 'Molinos Viejos', '40.280,-5.280', NULL, 'cultural', '2023-05-09', NULL, TRUE),
@@ -45,7 +48,7 @@ VALUES
 -- Comentarios (ejemplos variados)
 INSERT INTO comentario (id_usuario, id_ruta, texto, fecha_comentario, fecha_edicion)
 VALUES
-    (1, 1, '¡Preciosa ruta, muy recomendable!', '2023-04-02', NULL),
+    (9, 1, '¡Preciosa ruta, muy recomendable!', '2023-04-02', NULL),
     (2, 2, 'Difícil pero merece la pena por las vistas.', '2023-04-11', NULL),
     (3, 3, 'Ideal para ir en familia.', '2023-04-16', NULL),
     (4, 4, 'Rocas resbaladizas en ciertos tramos, llevar cuidado.', '2023-05-02', NULL),
@@ -53,22 +56,22 @@ VALUES
     (6, 6, 'Muy exigente, recomiendo llevar agua extra.', '2023-05-04', NULL),
     (7, 7, 'Hermosa al atardecer.', '2023-05-05', NULL),
     (8, 8, 'Mucho bosque y sombra, ideal en verano.', '2023-05-06', NULL),
-    (1, 9, 'Bastante húmeda en primavera.', '2023-05-07', NULL),
+    (9, 9, 'Bastante húmeda en primavera.', '2023-05-07', NULL),
     (2, 10, 'Larga pero con tramos de descanso.', '2023-05-08', NULL);
 
 -- Valoraciones (ejemplos)
 INSERT INTO valoracion (id_usuario, id_ruta, puntuacion, fecha_valoracion)
 VALUES
-    (1, 1, 8, '2023-04-02'),
+    (9, 1, 8, '2023-04-02'),
     (2, 1, 9, '2023-04-03'),
     (3, 2, 10, '2023-04-11'),
-    (1, 3, 7, '2023-04-16'),
+    (9, 3, 7, '2023-04-16'),
     (4, 4, 7, '2023-05-02'),
     (5, 5, 9, '2023-05-03'),
     (6, 6, 6, '2023-05-04'),
     (7, 7, 8, '2023-05-05'),
     (8, 8, 8, '2023-05-06'),
-    (1, 9, 7, '2023-05-07'),
+    (9, 9, 7, '2023-05-07'),
     (2, 10, 6, '2023-05-08'),
     (3, 11, 9, '2023-05-09'),
     (4, 12, 8, '2023-05-10'),
@@ -76,6 +79,6 @@ VALUES
     (6, 14, 8, '2023-05-12'),
     (7, 15, 9, '2023-05-13'),
     (8, 16, 7, '2023-05-14'),
-    (1, 17, 8, '2023-05-15'),
+    (9, 17, 8, '2023-05-15'),
     (2, 18, 9, '2023-05-16'),
     (3, 19, 8, '2023-05-17');

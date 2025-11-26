@@ -5,81 +5,292 @@
     <title th:text="${ruta != null ? ruta.titulo : 'Ruta'}">Ruta</title>
 </head>
 <body>
+<nav>
+    <a href="/">Rutas</a> |
+    <a href="/usuarios">Usuarios</a> |
+    <span th:if="${currentUser == null}">
+        <a href="/login">Login</a> |
+        <a href="/register">Registrarse</a>
+    </span>
+    <span th:if="${currentUser != null}">
+        <span th:text="${currentUser.nombre}">Usuario</span> |
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" style="background:none;border:none;padding:0;color:#00f;text-decoration:underline;cursor:pointer;">Logout</button>
+        </form>
+        <span th:if="${currentUser.admin}"> | <a href="/admin">Admin</a></span>
+    </span>
+</nav>
+<p><a href="/">Volver al inicio</a></p>
 <h1 th:text="${ruta != null ? ruta.titulo : 'Ruta no encontrada'}">Ruta</h1>
-<div th:if="${ruta != null}">
+<div th:if="${ruta != null}" id="rutaContainer" th:attr="data-ruta-id=${ruta != null ? ruta.idRuta : -1}">
     <p><strong>Descripción:</strong> <span th:text="${ruta.descripcion}">Descripción</span></p>
     <p><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></p>
     <p><strong>Media valoraciones:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></p>
 
     <h2>Comentarios</h2>
     <ul>
-        <li th:each="c : ${comentarios}">
-            <strong th:text="${c.usuario.nombre}">Usuario</strong>:
+        <li th:each="c : ${comentarios}" th:attr="data-comentario-id=${c.idComentario}, data-text=${c.texto}">
+            <strong th:text="${c.usuario != null ? c.usuario.nombre : 'Anon'}">Usuario</strong>:
             <span th:text="${c.texto}">Texto</span>
             <em th:text="${c.fechaComentario}">fecha</em>
+            <!-- Mostrar botón Editar/Eliminar sólo si el usuario actual es el autor -->
+            <span th:if="${currentUser != null and c.usuario != null and c.usuario.idUsuario == currentUser.idUsuario}">
+                &nbsp;<button type="button" th:attr="data-edit-id=${c.idComentario}" onclick="startEditComentario(this.dataset.editId)">Editar</button>
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar</button>
+            </span>
+            <!-- Admin puede eliminar cualquier comentario -->
+            <span th:if="${currentUser != null and currentUser.admin}">
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar (admin)</button>
+            </span>
         </li>
     </ul>
 
-    <h3>Añadir comentario</h3>
-    <form id="comentarioForm" onsubmit="return enviarComentario()">
-        <label for="usuario">Usuario:</label>
-        <select id="usuario" name="usuarioId">
-            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}"></option>
-        </select>
-        <br/>
-        <label for="texto">Texto:</label>
-        <input id="texto" name="texto" />
-        <button type="submit">Añadir</button>
-    </form>
+    <div th:if="${currentUser != null}">
+        <h3>Añadir comentario</h3>
+        <form id="comentarioForm" onsubmit="return enviarComentario()">
+            <label>Usuario:</label>
+            <span th:text="${currentUser.nombre}"></span>
+            <br/>
+            <label for="texto">Texto:</label>
+            <input id="texto" name="texto" />
+            <button id="comentarioSubmit" type="submit">Añadir</button>
+            <button id="comentarioCancel" type="button" style="display:none;margin-left:8px;" onclick="cancelEditComentario()">Cancelar</button>
+        </form>
+    </div>
+    <div th:if="${currentUser == null}">
+        <p>Para añadir comentarios <a href="/login">inicia sesión</a> o <a href="/register">regístrate</a>.</p>
+    </div>
 
     <h2>Valoraciones</h2>
     <ul>
-        <li th:each="v : ${valoraciones}">
-            <strong th:text="${v.usuario.nombre}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
+        <li th:each="v : ${valoraciones}" th:attr="data-valoracion-id=${v.idValoracion}, data-usuario-id=${v.usuario != null ? v.usuario.idUsuario : -1}">
+            <strong th:text="${v.usuario != null ? v.usuario.nombre : 'Anon'}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
+            <span th:if="${currentUser != null and ((v.usuario != null and v.usuario.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
+                &nbsp;<button type="button" th:attr="data-del-id=${v.idValoracion}" onclick="deleteValoracion(this.dataset.delId)">Eliminar</button>
+            </span>
         </li>
     </ul>
 
-    <h3>Añadir/Modificar valoración</h3>
-    <form id="valoracionForm" onsubmit="return enviarValoracion()">
-        <label for="usuarioVal">Usuario:</label>
-        <select id="usuarioVal" name="usuarioId">
-            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}"></option>
-        </select>
-        <br/>
-        <label for="puntuacion">Puntuación (1-10):</label>
-        <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" />
-        <button type="submit">Enviar</button>
-    </form>
+    <div th:if="${currentUser != null}">
+        <h3>Añadir/Modificar valoración</h3>
+        <form id="valoracionForm" onsubmit="return enviarValoracion()">
+            <label>Usuario:</label>
+            <span th:text="${currentUser.nombre}"></span>
+            <br/>
+            <label for="puntuacion">Puntuación (1-10):</label>
+            <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" />
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    <div th:if="${currentUser == null}">
+        <p>Para valorar <a href="/login">inicia sesión</a> o <a href="/register">regístrate</a>.</p>
+    </div>
+
+    <div th:if="${currentUser != null and ((ruta.autor != null and ruta.autor.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
+        <button type="button" onclick="deleteRuta()">Eliminar ruta</button>
+    </div>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        var rutaId = [[${ruta.idRuta}]];
+        // obtener rutaId desde el atributo data para evitar inline Thymeleaf en JS
+        var rutaId = parseInt(document.getElementById('rutaContainer').dataset.rutaId, 10) || -1;
+        // Token CSRF proporcionado por el servidor (Thymeleaf)
+        var csrfToken = /*[[${_csrf.token}]]*/ '';
         /*]]>*/
 
-        function enviarComentario() {
-            const usuarioId = document.getElementById('usuario').value;
-            const texto = document.getElementById('texto').value;
-            fetch('/api/rutas/' + rutaId + '/comentarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuarioId: usuarioId, texto: texto })
-            }).then(r => {
-                if (r.ok) location.reload(); else alert('Error al añadir comentario');
+        // DEBUG: imprimir cookies y token
+        console.debug('csrfToken (Thymeleaf):', csrfToken);
+        console.debug('document.cookie:', document.cookie);
+
+        var editingComentarioId = null;
+
+        function sanitizeToken(t) {
+            if (!t) return t;
+            // quitar comillas alrededor si existen
+            return t.replace(/^\s*"(.*)"\s*$/, '$1');
+        }
+
+        function getCookie(name) {
+            const matches = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
+            return matches ? decodeURIComponent(matches[2]) : null;
+        }
+
+        // Asegura que haya cookie XSRF-TOKEN; si no existe hace un GET para que el servidor la cree
+        function ensureCsrf() {
+            return new Promise((resolve, reject) => {
+                // Primero usar el token inyectado por Thymeleaf si está disponible
+                if (csrfToken && csrfToken.trim().length > 0) {
+                    return resolve(sanitizeToken(csrfToken));
+                }
+                const existing = getCookie('XSRF-TOKEN');
+                if (existing) return resolve(sanitizeToken(existing));
+                // Hacemos un GET a la misma página para que CookieCsrfTokenRepository ponga la cookie
+                fetch(window.location.href, { method: 'GET', credentials: 'include' })
+                    .then(() => {
+                        const tok = getCookie('XSRF-TOKEN');
+                        if (tok) resolve(sanitizeToken(tok));
+                        else reject(new Error('No se pudo obtener XSRF-TOKEN'));
+                    })
+                    .catch(err => reject(err));
             });
+        }
+
+        function startEditComentario(id) {
+            // Si id es 0 (por Thymeleaf placeholder) se intenta coger desde el DOM en el evento
+            if (!id || id === 0) {
+                // this function may be called from onclick with placeholder; find closest li
+                // event doesn't propagate here, so try to find a selected li by focusing element
+                // Mejor: obtener el id del botón usando arguments.callee.caller no fiable.
+                // En vez de esto, buscaremos el primer li que tenga aria-selected o simplemente abortar.
+            }
+            // Intentar encontrar el li con data-comentario-id si id no válido
+            if (!id || id === 0) {
+                // intentar extraer id del elemento activo (document.activeElement)
+                const active = document.activeElement;
+                if (active && active.closest) {
+                    const li = active.closest('li[data-comentario-id]');
+                    if (li) id = parseInt(li.dataset.comentarioId, 10);
+                }
+            }
+            if (!id || isNaN(id)) { alert('No se pudo iniciar la edición del comentario'); return; }
+
+            const li = document.querySelector('li[data-comentario-id="' + id + '"]');
+            if (!li) { alert('Comentario no encontrado en la página'); return; }
+            const texto = li.dataset.text || li.querySelector('span') && li.querySelector('span').textContent || '';
+            document.getElementById('texto').value = texto;
+            editingComentarioId = id;
+            document.getElementById('comentarioSubmit').textContent = 'Guardar';
+            document.getElementById('comentarioCancel').style.display = 'inline-block';
+            document.getElementById('texto').focus();
+        }
+
+        function cancelEditComentario() {
+            editingComentarioId = null;
+            document.getElementById('texto').value = '';
+            document.getElementById('comentarioSubmit').textContent = 'Añadir';
+            document.getElementById('comentarioCancel').style.display = 'none';
+        }
+
+        function enviarComentario() {
+            const textoEl = document.getElementById('texto');
+            const texto = textoEl.value && textoEl.value.trim();
+            if (!texto) { alert('Introduce un texto para el comentario'); return false; }
+
+            ensureCsrf().then(csrf => {
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+
+                if (editingComentarioId) {
+                    // actualizar comentario existente via PUT
+                    fetch('/api/rutas/' + rutaId + '/comentarios/' + editingComentarioId, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: headers,
+                        body: JSON.stringify({ texto: texto })
+                    }).then(r => {
+                        if (r.ok) {
+                            location.reload();
+                        } else {
+                            r.text().then(t => alert('Error al modificar comentario: ' + (t || r.statusText)));
+                        }
+                    }).catch(e => alert('Error de red al modificar comentario: ' + e));
+                } else {
+                    // crear nuevo comentario via POST
+                    fetch('/api/rutas/' + rutaId + '/comentarios', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: headers,
+                        body: JSON.stringify({ texto: texto })
+                    }).then(r => {
+                        if (r.ok) {
+                            location.reload();
+                        } else {
+                            r.text().then(t => alert('Error al añadir comentario: ' + (t || r.statusText)));
+                        }
+                    }).catch(e => alert('Error de red al añadir comentario: ' + e));
+                }
+            }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
+
             return false;
         }
 
         function enviarValoracion() {
-            const usuarioId = document.getElementById('usuarioVal').value;
-            const puntuacion = parseInt(document.getElementById('puntuacion').value);
-            fetch('/api/rutas/' + rutaId + '/valoraciones', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuarioId: usuarioId, puntuacion: puntuacion })
-            }).then(r => {
-                if (r.ok) location.reload(); else r.text().then(t => alert('Error: ' + t));
-            });
+            const puntuacionRaw = document.getElementById('puntuacion').value;
+            if (!puntuacionRaw) { alert('Introduce una puntuación entre 1 y 10'); return false; }
+            const puntuacion = parseInt(puntuacionRaw, 10);
+            if (isNaN(puntuacion) || puntuacion < 1 || puntuacion > 10) { alert('La puntuación debe ser un número entre 1 y 10'); return false; }
+
+            ensureCsrf().then(csrf => {
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+
+                fetch('/api/rutas/' + rutaId + '/valoraciones', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: headers,
+                    body: JSON.stringify({ puntuacion: puntuacion })
+                }).then(r => {
+                    if (r.ok) {
+                        location.reload();
+                    } else {
+                        r.text().then(t => alert('Error al añadir/actualizar valoración: ' + (t || r.statusText)));
+                    }
+                }).catch(e => alert('Error de red al añadir valoración: ' + e));
+            }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
+
             return false;
+        }
+
+        function deleteComentario(id) {
+            if (!id) { alert('ID de comentario inválido'); return; }
+            if (!confirm('¿Eliminar este comentario?')) return;
+            ensureCsrf().then(csrf => {
+                const headers = {};
+                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                fetch('/api/rutas/' + rutaId + '/comentarios/' + id, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: headers
+                }).then(r => {
+                    if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar comentario: ' + (t || r.statusText)));
+                }).catch(e => alert('Error de red al eliminar comentario: ' + e));
+            }).catch(err => alert('No se obtuvo token CSRF: ' + err));
+        }
+
+        function deleteValoracion(id) {
+            if (!id) { alert('ID de valoración inválido'); return; }
+            if (!confirm('¿Eliminar esta valoración?')) return;
+            ensureCsrf().then(csrf => {
+                const headers = {};
+                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                fetch('/api/rutas/' + rutaId + '/valoraciones/' + id, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: headers
+                }).then(r => {
+                    if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar valoración: ' + (t || r.statusText)));
+                }).catch(e => alert('Error de red al eliminar valoración: ' + e));
+            }).catch(err => alert('No se obtuvo token CSRF: ' + err));
+        }
+
+        function deleteRuta() {
+            if (!confirm('¿Eliminar esta ruta? Esta operación también eliminará comentarios y valoraciones relacionados.')) return;
+            ensureCsrf().then(csrf => {
+                const headers = {};
+                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                fetch('/api/rutas/' + rutaId, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: headers
+                }).then(r => {
+                    if (r.status === 204 || r.ok) {
+                        window.location = '/';
+                    } else {
+                        r.text().then(t => alert('Error al eliminar ruta: ' + (t || r.statusText)));
+                    }
+                }).catch(e => alert('Error de red al eliminar ruta: ' + e));
+            }).catch(err => alert('No se obtuvo token CSRF: ' + err));
         }
     </script>
 </div>

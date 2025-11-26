@@ -10,7 +10,13 @@
 <div th:with="rutaId=${ruta != null} ? ${ruta.idRuta} : 0">
     <label>Título: <input id="titulo" type="text" th:value="${ruta != null} ? ${ruta.titulo} : ''"/></label><br/>
     <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''"></textarea></label><br/>
-    <label>Dificultad: <input id="dificultad" type="text" th:value="${ruta != null} ? ${ruta.dificultad} : ''"/></label><br/>
+    <label>Dificultad:
+        <select id="dificultad">
+            <option value="FACIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'FACIL'}">Fácil</option>
+            <option value="MEDIA" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'MEDIA'}">Media</option>
+            <option value="DIFICIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'DIFICIL'}">Difícil</option>
+        </select>
+    </label><br/>
     <label>Distancia (km): <input id="distancia" type="text" th:value="${ruta != null} ? ${ruta.distanciaKm} : ''"/></label><br/>
     <label>Autor:
         <select id="autor">
@@ -26,12 +32,24 @@
     /*]]>*/
 
     function enviarRuta() {
+        var titulo = document.getElementById('titulo').value;
+        var descripcion = document.getElementById('descripcion').value;
+        var dificultad = document.getElementById('dificultad').value || null;
+        var distanciaStr = document.getElementById('distancia').value;
+        var distancia = null;
+        if (distanciaStr && distanciaStr.trim() !== "") {
+            var n = Number(distanciaStr.replace(',', '.'));
+            if (!isNaN(n)) distancia = n;
+        }
+        var autorId = parseInt(document.getElementById('autor').value);
+
         var payload = {
-            titulo: document.getElementById('titulo').value,
-            descripcion: document.getElementById('descripcion').value,
-            dificultad: document.getElementById('dificultad').value,
-            distanciaKm: document.getElementById('distancia').value,
-            autor: { idUsuario: parseInt(document.getElementById('autor').value) }
+            titulo: titulo,
+            descripcion: descripcion,
+            dificultad: dificultad,
+            distanciaKm: distancia,
+            tipoActividad: 'SENDERISMO',
+            autor: { idUsuario: autorId }
         };
 
         var method = rutaId && rutaId > 0 ? 'PUT' : 'POST';
@@ -43,7 +61,6 @@
             body: JSON.stringify(payload)
         }).then(r => {
             if (r.ok) {
-                // ir al detalle de la ruta recién creada/actualizada
                 r.json().then(obj => {
                     var id = obj.idRuta || rutaId;
                     window.location.href = '/rutas/' + id;

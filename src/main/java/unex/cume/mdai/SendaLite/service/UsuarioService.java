@@ -2,6 +2,8 @@ package unex.cume.mdai.SendaLite.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import unex.cume.mdai.SendaLite.model.Usuario;
 import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
@@ -14,9 +16,19 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    // Constructor primario para el contexto de aplicación
+    @Autowired
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    // Constructor alternativo para tests (sin PasswordEncoder)
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = null;
     }
 
     @Transactional
@@ -26,6 +38,10 @@ public class UsuarioService {
         Optional<Usuario> exists = usuarioRepository.findByEmail(usuario.getEmail());
         if (exists.isPresent()) throw new IllegalArgumentException("Email ya registrado: " + usuario.getEmail());
         if (usuario.getFechaRegistro() == null) usuario.setFechaRegistro(LocalDate.now());
+        // encode password if encoder available
+        if (usuario.getPassword() != null && passwordEncoder != null) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -75,6 +91,10 @@ public class UsuarioService {
     @Transactional
     public Usuario modificarUsuario(Usuario usuario) {
         if (usuario == null || usuario.getIdUsuario() == null) throw new IllegalArgumentException("Usuario o id nulo");
+        // if password provided and encoder available, encode it
+        if (usuario.getPassword() != null && passwordEncoder != null) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return usuarioRepository.save(usuario);
     }
 

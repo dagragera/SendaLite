@@ -4,7 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import unex.cume.mdai.SendaLite.service.RutaService;
@@ -52,23 +51,37 @@ public class ViewController implements CommandLineRunner {
         return "index";
     }
 
+    // Redirección para enlaces antiguos que apuntaban a /static
+    @GetMapping("/static")
+    public String staticRedirect() {
+        return "redirect:/";
+    }
+
     @GetMapping("/rutas/{id}")
     public String rutaDetalle(@PathVariable Long id, Model model) {
-        // Intentar cargar la ruta con todos sus detalles (autor, comentarios, valoraciones)
-        var opt = rutaService.buscarConDetalles(id);
-        if (opt.isPresent()) {
-            var ruta = opt.get();
-            model.addAttribute("ruta", ruta);
-            model.addAttribute("comentarios", ruta.getComentarios());
-            model.addAttribute("valoraciones", ruta.getValoraciones());
-        } else {
-            model.addAttribute("ruta", null);
-            model.addAttribute("comentarios", comentarioService.listByRuta(id));
-            model.addAttribute("valoraciones", valoracionService.listByRuta(id));
+        try {
+            // Intentar cargar la ruta con todos sus detalles (autor, comentarios, valoraciones)
+            var opt = rutaService.buscarConDetalles(id);
+            if (opt.isPresent()) {
+                var ruta = opt.get();
+                model.addAttribute("ruta", ruta);
+                model.addAttribute("comentarios", ruta.getComentarios());
+                model.addAttribute("valoraciones", ruta.getValoraciones());
+            } else {
+                model.addAttribute("ruta", null);
+                model.addAttribute("comentarios", comentarioService.listByRuta(id));
+                model.addAttribute("valoraciones", valoracionService.listByRuta(id));
+            }
+            model.addAttribute("usuarios", usuarioService.listAll());
+            model.addAttribute("media", valoracionService.averageForRuta(id));
+            return "ruta";
+        } catch (Exception ex) {
+            logger.error("Error al obtener detalle de ruta {}: {}", id, ex.toString(), ex);
+            model.addAttribute("status", 500);
+            model.addAttribute("error", "Internal Server Error");
+            model.addAttribute("message", ex.getMessage());
+            return "error";
         }
-        model.addAttribute("usuarios", usuarioService.listAll());
-        model.addAttribute("media", valoracionService.averageForRuta(id));
-        return "ruta";
     }
 
     // Lista de usuarios (vista)

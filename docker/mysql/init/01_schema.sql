@@ -1,4 +1,5 @@
 -- Esquema adaptado a las entidades Java
+CREATE DATABASE IF NOT EXISTS `sendalite` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE sendalite;
 
 CREATE TABLE IF NOT EXISTS usuario (
@@ -8,7 +9,8 @@ CREATE TABLE IF NOT EXISTS usuario (
     nombre VARCHAR(100) NOT NULL,
     avatar VARCHAR(255),
     fecha_registro DATE NOT NULL,
-    activo BOOLEAN NOT NULL
+    activo BOOLEAN NOT NULL,
+    admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS ruta (

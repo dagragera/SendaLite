@@ -9,8 +9,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,7 +57,8 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		Set<Comentario> comentarios = new HashSet<>();
+		ruta.setComentarios(comentarios);
 
 		// Crear comentario asociado a la ruta y al usuario
 		Comentario c = new Comentario();
@@ -73,12 +74,12 @@ public class UsuarioTest {
 		entityManager.clear();
 
 		// Comprobar que el comentario se guardó
-		List<Comentario> comentarios = entityManager.getEntityManager()
+		java.util.List<Comentario> comentariosPersist = entityManager.getEntityManager()
                 .createQuery("SELECT c FROM Comentario c WHERE c.ruta.titulo = :t", Comentario.class)
                 .setParameter("t", "Ruta de prueba")
                 .getResultList();
-        assertThat(comentarios).hasSize(1);
-        assertThat(comentarios.get(0).getTexto()).isEqualTo("Buen camino");
+        assertThat(comentariosPersist).hasSize(1);
+        assertThat(comentariosPersist.get(0).getTexto()).isEqualTo("Buen camino");
 	}
 
 	@Test
@@ -101,7 +102,8 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		Set<Comentario> comentarios2 = new HashSet<>();
+		ruta.setComentarios(comentarios2);
 
 		Comentario c1 = new Comentario();
 		c1.setTexto("Comentario 1");
@@ -127,7 +129,7 @@ public class UsuarioTest {
 		entityManager.clear();
 
 		// No debe quedar ningún comentario para esa ruta
-		List<Comentario> comentariosAfter = entityManager.getEntityManager()
+		java.util.List<Comentario> comentariosAfter = entityManager.getEntityManager()
 				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.idRuta = :rid", Comentario.class)
 				.setParameter("rid", rutaId)
 				.getResultList();
@@ -146,7 +148,7 @@ public class UsuarioTest {
 		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
-		List<Usuario> found = entityManager.getEntityManager()
+		java.util.List<Usuario> found = entityManager.getEntityManager()
 				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
 				.setParameter("e", "basicuser@example.com")
 				.getResultList();
@@ -174,7 +176,7 @@ public class UsuarioTest {
 		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
-		List<Usuario> after = entityManager.getEntityManager()
+		java.util.List<Usuario> after = entityManager.getEntityManager()
 				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
 				.setParameter("e", "deluser@example.com")
 				.getResultList();

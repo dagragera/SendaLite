@@ -8,7 +8,19 @@
 <nav>
     <a href="/">Rutas</a> |
     <a href="/usuarios">Usuarios</a> |
-    <a href="/rutas/nueva">Crear Ruta</a>
+    <a href="/rutas/nueva">Crear Ruta</a> |
+    <span th:if="${currentUser == null}">
+        <a href="/login">Login</a> |
+        <a href="/register">Registrarse</a>
+    </span>
+    <span th:if="${currentUser != null}">
+        <span th:text="${currentUser.nombre}">Usuario</span> |
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" style="background:none;border:none;padding:0;color:#00f;text-decoration:underline;cursor:pointer;">Logout</button>
+        </form>
+        <span th:if="${currentUser.admin}"> | <a href="/admin">Admin</a></span>
+    </span>
 </nav>
 <h1>Rutas disponibles</h1>
 <div>
