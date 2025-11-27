@@ -3,84 +3,38 @@ package unex.cume.mdai.SendaLite.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    @Bean
+    @SuppressWarnings("deprecation")
+    public PasswordEncoder passwordEncoder() {
+        // Usar NoOp durante desarrollo para aceptar contraseñas en texto plano (seed existente)
+        return NoOpPasswordEncoder.getInstance();
+    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // Reactivar CSRF con CookieCsrfTokenRepository (seguro y compatible con fetch que envía X-XSRF-TOKEN)
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(auth -> auth
-                // recursos estáticos
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                // páginas públicas y login/register
-                .requestMatchers("/", "/rutas/**", "/usuarios/**", "/login", "/register").permitAll()
-                .requestMatchers("/api/usuarios").permitAll()
-                // permitir GET público para endpoints de rutas (listar/ver)
-                .requestMatchers(HttpMethod.GET, "/api/rutas/**").permitAll()
-                // requerir autenticación para operaciones que modifican datos en /api/rutas/**
-                .requestMatchers(HttpMethod.POST, "/api/rutas/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/rutas/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/rutas/**").authenticated()
-                // endpoints de administración
-                .requestMatchers("/admin/**", "/api/usuarios/**").hasRole("ADMIN")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Permitir acceso público a páginas de login/registro y recursos estáticos
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/register", "/login", "/css/**", "/js/**", "/img/**", "/webjars/**", "/h2-console/**", "/").permitAll()
                 .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
+        )
+        // Form login configurado para usar nuestra página /login
+        .formLogin(form -> form
                 .loginPage("/login")
                 .permitAll()
-                // Forzar siempre la redirección al inicio tras login para evitar usar SavedRequest que a veces guarda URLs no deseadas
                 .defaultSuccessUrl("/", true)
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
-                .permitAll()
-            );
+        )
+        .logout(logout -> logout.permitAll());
+
+        // Habilitar frames para H2 console (solo local/de desarrollo)
+        http.headers().frameOptions().sameOrigin();
+
         return http.build();
-    }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:8080")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowCredentials(true);
-            }
-        };
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // NoOp encoder for local testing with plain-text passwords (NOT for production)
-        return NoOpPasswordEncoder.getInstance();
     }
 }
