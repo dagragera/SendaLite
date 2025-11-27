@@ -46,12 +46,19 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody Usuario u) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Usuario u) {
         try {
             Usuario updated = usuarioService.update(id, u);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.notFound().build();
+            logger.warn("Validación al actualizar usuario {}: {}", id, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            logger.warn("Violation al actualizar usuario {}: {}", id, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error de integridad: " + ex.getMessage());
+        } catch (Exception ex) {
+            logger.error("Error inesperado actualizando usuario {}", id, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + ex.getMessage());
         }
     }
 

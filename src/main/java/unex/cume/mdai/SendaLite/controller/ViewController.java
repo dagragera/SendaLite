@@ -15,6 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import unex.cume.mdai.SendaLite.model.Usuario;
+
+import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 public class ViewController implements CommandLineRunner {
@@ -47,7 +53,23 @@ public class ViewController implements CommandLineRunner {
 
     @GetMapping({"/", ""})
     public String index(Model model) {
-        model.addAttribute("rutas", rutaService.listAll());
+        var rutas = rutaService.listAll();
+        model.addAttribute("rutas", rutas);
+        // Calcular media de valoraciones por ruta y pasar un mapa id->media
+        Map<Long, Double> medias = new HashMap<>();
+        if (rutas != null) {
+            for (var r : rutas) {
+                Long id = r.getIdRuta();
+                try {
+                    double avg = valoracionService.averageForRuta(id);
+                    medias.put(id, avg);
+                } catch (Exception ex) {
+                    logger.warn("No se pudo calcular media para ruta {}: {}", id, ex.getMessage());
+                    medias.put(id, 0.0);
+                }
+            }
+        }
+        model.addAttribute("medias", medias);
         return "index";
     }
 
@@ -74,9 +96,19 @@ public class ViewController implements CommandLineRunner {
             }
             model.addAttribute("usuarios", usuarioService.listAll());
             model.addAttribute("media", valoracionService.averageForRuta(id));
+
+            // Añadir currentUser si está autenticado
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName() != null) {
+                Usuario u = usuarioService.buscarUsuarioPorEmail(auth.getName()).orElse(null);
+                model.addAttribute("currentUser", u);
+            } else {
+                model.addAttribute("currentUser", null);
+            }
+
             return "ruta";
         } catch (Exception ex) {
-            logger.error("Error al obtener detalle de ruta {}: {}", id, ex.toString(), ex);
+            logger.error("Error al obtener detalle de ruta {}: {}", id, ex.getMessage(), ex);
             model.addAttribute("status", 500);
             model.addAttribute("error", "Internal Server Error");
             model.addAttribute("message", ex.getMessage());
@@ -87,6 +119,22 @@ public class ViewController implements CommandLineRunner {
     // Lista de usuarios (vista)
     @GetMapping("/usuarios")
     public String usuarios(Model model) {
+        // Comprobar que el usuario actual existe y es admin
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            model.addAttribute("status", 403);
+            model.addAttribute("error", "Forbidden");
+            model.addAttribute("message", "Acceso denegado: debes ser administrador para ver la lista de usuarios.");
+            return "error";
+        }
+        var maybe = usuarioService.buscarUsuarioPorEmail(auth.getName());
+        if (maybe.isEmpty() || !maybe.get().isAdmin()) {
+            model.addAttribute("status", 403);
+            model.addAttribute("error", "Forbidden");
+            model.addAttribute("message", "Acceso denegado: debes ser administrador para ver la lista de usuarios.");
+            return "error";
+        }
+
         model.addAttribute("usuarios", usuarioService.listAll());
         return "usuarios";
     }
@@ -94,6 +142,22 @@ public class ViewController implements CommandLineRunner {
     // Detalle de usuario (vista)
     @GetMapping("/usuarios/{id}")
     public String usuarioDetalle(@PathVariable Long id, Model model) {
+        // Solo admin puede ver detalles de otros usuarios
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            model.addAttribute("status", 403);
+            model.addAttribute("error", "Forbidden");
+            model.addAttribute("message", "Acceso denegado: debes ser administrador para ver detalles de usuarios.");
+            return "error";
+        }
+        var maybe = usuarioService.buscarUsuarioPorEmail(auth.getName());
+        if (maybe.isEmpty() || !maybe.get().isAdmin()) {
+            model.addAttribute("status", 403);
+            model.addAttribute("error", "Forbidden");
+            model.addAttribute("message", "Acceso denegado: debes ser administrador para ver detalles de usuarios.");
+            return "error";
+        }
+
         model.addAttribute("usuario", usuarioService.findById(id).orElse(null));
         // opcional: añadir rutas/valoraciones/comentarios del usuario si se requieren
         return "usuario";
@@ -104,6 +168,15 @@ public class ViewController implements CommandLineRunner {
     public String nuevaRuta(Model model) {
         model.addAttribute("ruta", new unex.cume.mdai.SendaLite.model.Ruta());
         model.addAttribute("usuarios", usuarioService.listAll());
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            Usuario u = usuarioService.buscarUsuarioPorEmail(auth.getName()).orElse(null);
+            model.addAttribute("currentUser", u);
+        } else {
+            model.addAttribute("currentUser", null);
+        }
+
         return "ruta_form";
     }
 
@@ -112,6 +185,15 @@ public class ViewController implements CommandLineRunner {
     public String editarRuta(@PathVariable Long id, Model model) {
         model.addAttribute("ruta", rutaService.findById(id).orElse(null));
         model.addAttribute("usuarios", usuarioService.listAll());
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            Usuario u = usuarioService.buscarUsuarioPorEmail(auth.getName()).orElse(null);
+            model.addAttribute("currentUser", u);
+        } else {
+            model.addAttribute("currentUser", null);
+        }
+
         return "ruta_form";
     }
 

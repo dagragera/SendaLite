@@ -30,9 +30,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // recursos estáticos
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                // páginas públicas y login/register
-                .requestMatchers("/", "/rutas/**", "/usuarios/**", "/login", "/register").permitAll()
-                .requestMatchers("/api/usuarios").permitAll()
+                // páginas públicas y login/register (no incluir /usuarios/** aquí)
+                .requestMatchers("/", "/rutas/**", "/login", "/register").permitAll()
+                // Nota: no permitir acceso público a /api/usuarios; se protege más abajo con role ADMIN
+                // vistas de usuarios sólo accesibles por ADMIN
+                .requestMatchers("/usuarios/**").hasRole("ADMIN")
                 // permitir GET público para endpoints de rutas (listar/ver)
                 .requestMatchers(HttpMethod.GET, "/api/rutas/**").permitAll()
                 // requerir autenticación para operaciones que modifican datos en /api/rutas/**

@@ -3,35 +3,44 @@
 <head>
     <meta charset="UTF-8" />
     <title th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Nueva Ruta'">Ruta</title>
+    <!-- Añadir meta tags CSRF para que JS pueda leerlos -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 <body>
 <h1 th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Crear / Editar Ruta'">Crear / Editar Ruta</h1>
 <!-- Usar JS para enviar JSON al endpoint REST -->
 <div th:with="rutaId=${ruta != null} ? ${ruta.idRuta} : 0">
-    <label>Título: <input id="titulo" type="text" th:value="${ruta != null} ? ${ruta.titulo} : ''"/></label><br/>
-    <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''"></textarea></label><br/>
+    <label>Título: <input id="titulo" type="text" th:value="${ruta != null} ? ${ruta.titulo} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''" th:disabled="${currentUser == null}"></textarea></label><br/>
     <label>Dificultad:
-        <select id="dificultad">
+        <select id="dificultad" th:disabled="${currentUser == null}">
             <option value="FACIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'FACIL'}">Fácil</option>
             <option value="MEDIA" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'MEDIA'}">Media</option>
             <option value="DIFICIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'DIFICIL'}">Difícil</option>
         </select>
     </label><br/>
-    <label>Distancia (km): <input id="distancia" type="text" th:value="${ruta != null} ? ${ruta.distanciaKm} : ''"/></label><br/>
-    <label>Autor:
-        <select id="autor">
-            <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.nombre}" th:selected="${ruta != null and ruta.autor != null and ruta.autor.idUsuario == u.idUsuario}"></option>
-        </select>
-    </label><br/>
-    <button onclick="enviarRuta()">Guardar</button>
+    <label>Distancia (km): <input id="distancia" type="text" th:value="${ruta != null} ? ${ruta.distanciaKm} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <!-- Mostrar autor actual si existe -->
+    <label>Autor: <span th:text="${currentUser != null} ? ${currentUser.nombre} : 'Anónimo'">Autor</span></label>
+    <br/>
+
+    <!-- Mostrar botón Guardar solo si el usuario está autenticado -->
+    <div>
+        <button th:if="${currentUser != null}" onclick="enviarRuta()">Guardar</button>
+        <p th:if="${currentUser == null}">Para crear una ruta debes <a href="/login">iniciar sesión</a> o <a href="/register">registrarte</a>.</p>
+    </div>
 </div>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
     var rutaId = /*[[${ruta != null and ruta.idRuta != null ? ruta.idRuta : 0}]]*/ 0;
+    var isAuthenticated = /*[[${currentUser != null}]]*/ false;
     /*]]>*/
 
     function enviarRuta() {
+        if (!isAuthenticated) { alert('Debes iniciar sesión o registrarte para crear una ruta'); return; }
+
         var titulo = document.getElementById('titulo').value;
         var descripcion = document.getElementById('descripcion').value;
         var dificultad = document.getElementById('dificultad').value || null;
@@ -41,23 +50,32 @@
             var n = Number(distanciaStr.replace(',', '.'));
             if (!isNaN(n)) distancia = n;
         }
-        var autorId = parseInt(document.getElementById('autor').value);
 
         var payload = {
             titulo: titulo,
             descripcion: descripcion,
             dificultad: dificultad,
             distanciaKm: distancia,
-            tipoActividad: 'SENDERISMO',
-            autor: { idUsuario: autorId }
+            tipoActividad: 'SENDERISMO'
         };
 
         var method = rutaId && rutaId > 0 ? 'PUT' : 'POST';
         var url = '/api/rutas' + (method === 'PUT' ? '/' + rutaId : '');
 
+        // Construir headers incluyendo CSRF token
+        var headers = { 'Content-Type': 'application/json' };
+        var metaToken = document.querySelector('meta[name="_csrf"]');
+        var metaHeader = document.querySelector('meta[name="_csrf_header"]');
+        if (metaToken && metaHeader) {
+            var token = metaToken.getAttribute('content');
+            var headerName = metaHeader.getAttribute('content');
+            if (token && headerName) headers[headerName] = token;
+        }
+
         fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
+            credentials: 'include',
             body: JSON.stringify(payload)
         }).then(r => {
             if (r.ok) {

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <title th:text="${ruta != null ? ruta.titulo : 'Ruta'}">Ruta</title>
+    <!-- Meta tags CSRF para que JS pueda leer token y headerName -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 <body>
 <nav>
@@ -95,8 +98,11 @@
         /*<![CDATA[*/
         // obtener rutaId desde el atributo data para evitar inline Thymeleaf en JS
         var rutaId = parseInt(document.getElementById('rutaContainer').dataset.rutaId, 10) || -1;
-        // Token CSRF proporcionado por el servidor (Thymeleaf)
-        var csrfToken = /*[[${_csrf.token}]]*/ '';
+        // Usaremos meta tags CSRF en el DOM para obtener token y headerName
+        var csrfMeta = document.querySelector('meta[name="_csrf"]');
+        var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+        var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
         /*]]>*/
 
         // DEBUG: imprimir cookies y token
@@ -108,7 +114,7 @@
         function sanitizeToken(t) {
             if (!t) return t;
             // quitar comillas alrededor si existen
-            return t.replace(/^\s*"(.*)"\s*$/, '$1');
+            return t.replace(/^[\s\uFEFF\u00A0]*"?(.*?)"?[\s\uFEFF\u00A0]*$/, '$1');
         }
 
         function getCookie(name) {
@@ -116,16 +122,17 @@
             return matches ? decodeURIComponent(matches[2]) : null;
         }
 
-        // Asegura que haya cookie XSRF-TOKEN; si no existe hace un GET para que el servidor la cree
+        // Asegura que haya cookie XSRF-TOKEN o token meta; si no existe hace un GET para que el servidor la cree
         function ensureCsrf() {
             return new Promise((resolve, reject) => {
-                // Primero usar el token inyectado por Thymeleaf si está disponible
+                // Primero usar el token inyectado por Thymeleaf en meta si está disponible
                 if (csrfToken && csrfToken.trim().length > 0) {
                     return resolve(sanitizeToken(csrfToken));
                 }
+                // También permitir leer desde la cookie XSRF-TOKEN (CookieCsrfTokenRepository)
                 const existing = getCookie('XSRF-TOKEN');
                 if (existing) return resolve(sanitizeToken(existing));
-                // Hacemos un GET a la misma página para que CookieCsrfTokenRepository ponga la cookie
+                // Si no hay token, hacer un GET para que el servidor cree la cookie
                 fetch(window.location.href, { method: 'GET', credentials: 'include' })
                     .then(() => {
                         const tok = getCookie('XSRF-TOKEN');
@@ -179,7 +186,8 @@
 
             ensureCsrf().then(csrf => {
                 const headers = { 'Content-Type': 'application/json' };
-                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+                if (csrf) headers[headerName] = csrf;
 
                 if (editingComentarioId) {
                     // actualizar comentario existente via PUT
@@ -223,7 +231,8 @@
 
             ensureCsrf().then(csrf => {
                 const headers = { 'Content-Type': 'application/json' };
-                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+                if (csrf) headers[headerName] = csrf;
 
                 fetch('/api/rutas/' + rutaId + '/valoraciones', {
                     method: 'POST',
@@ -247,7 +256,8 @@
             if (!confirm('¿Eliminar este comentario?')) return;
             ensureCsrf().then(csrf => {
                 const headers = {};
-                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+                if (csrf) headers[headerName] = csrf;
                 fetch('/api/rutas/' + rutaId + '/comentarios/' + id, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -263,7 +273,8 @@
             if (!confirm('¿Eliminar esta valoración?')) return;
             ensureCsrf().then(csrf => {
                 const headers = {};
-                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+                if (csrf) headers[headerName] = csrf;
                 fetch('/api/rutas/' + rutaId + '/valoraciones/' + id, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -278,7 +289,8 @@
             if (!confirm('¿Eliminar esta ruta? Esta operación también eliminará comentarios y valoraciones relacionados.')) return;
             ensureCsrf().then(csrf => {
                 const headers = {};
-                if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+                const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+                if (csrf) headers[headerName] = csrf;
                 fetch('/api/rutas/' + rutaId, {
                     method: 'DELETE',
                     credentials: 'include',

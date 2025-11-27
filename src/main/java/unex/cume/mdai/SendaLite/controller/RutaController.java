@@ -32,7 +32,27 @@ public class RutaController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Ruta ruta) {
+        // Asignar autor desde el usuario autenticado para evitar que el cliente fije otro autor
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
+        }
+        String email = auth.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+        }
         try {
+            // Si el actor es admin y el payload incluye autor.idUsuario permitimos usarlo
+            if (usuario.isAdmin() && ruta.getAutor() != null && ruta.getAutor().getIdUsuario() != null) {
+                Long idAutor = ruta.getAutor().getIdUsuario();
+                Usuario u = usuarioRepository.findById(idAutor).orElse(null);
+                if (u == null) return ResponseEntity.badRequest().body("Autor indicado no existe: " + idAutor);
+                ruta.setAutor(u);
+            } else {
+                // Para usuarios normales forzamos autor autenticado
+                ruta.setAutor(usuario);
+            }
             Ruta saved = rutaService.create(ruta);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (IllegalArgumentException ex) {
@@ -60,8 +80,40 @@ public class RutaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Ruta ruta) {
+        // Validar permisos: solo autor o admin pueden modificar; además no permitir cambiar autor desde payload
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
+        }
+        String email = auth.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+        }
+
+        Ruta existing = rutaService.findById(id).orElse(null);
+        if (existing == null) return ResponseEntity.notFound().build();
+
+        boolean esAutor = existing.getAutor() != null && existing.getAutor().getIdUsuario() != null && existing.getAutor().getIdUsuario().equals(usuario.getIdUsuario());
+        if (!esAutor && !usuario.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No autorizado a modificar esta ruta");
+        }
+
         try {
-            Ruta updated = rutaService.modificarRuta(ruta);
+            // Copiar campos editables desde el body, pero preservar el autor
+            existing.setTitulo(ruta.getTitulo());
+            existing.setDescripcion(ruta.getDescripcion());
+            existing.setDificultad(ruta.getDificultad());
+            existing.setDistanciaKm(ruta.getDistanciaKm());
+            existing.setTipoActividad(ruta.getTipoActividad());
+            // Si el actor es admin y el payload contiene autor.idUsuario permitir cambiar autor
+            if (usuario.isAdmin() && ruta.getAutor() != null && ruta.getAutor().getIdUsuario() != null) {
+                Long idAutor = ruta.getAutor().getIdUsuario();
+                Usuario u = usuarioRepository.findById(idAutor).orElse(null);
+                if (u == null) return ResponseEntity.badRequest().body("Autor indicado no existe: " + idAutor);
+                existing.setAutor(u);
+            }
+            Ruta updated = rutaService.modificarRuta(existing);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException ex) {
             logger.warn("Error modificando ruta: {}", ex.getMessage());

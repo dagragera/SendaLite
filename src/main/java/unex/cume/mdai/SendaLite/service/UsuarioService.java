@@ -91,11 +91,26 @@ public class UsuarioService {
     @Transactional
     public Usuario modificarUsuario(Usuario usuario) {
         if (usuario == null || usuario.getIdUsuario() == null) throw new IllegalArgumentException("Usuario o id nulo");
-        // if password provided and encoder available, encode it
-        if (usuario.getPassword() != null && passwordEncoder != null) {
-            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        // Validar unicidad de email: si existe otro usuario con el mismo email y distinto id -> error
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) throw new IllegalArgumentException("Email requerido");
+        var maybe = usuarioRepository.findByEmail(usuario.getEmail());
+        if (maybe.isPresent() && !maybe.get().getIdUsuario().equals(usuario.getIdUsuario())) {
+            throw new IllegalArgumentException("Email ya registrado: " + usuario.getEmail());
         }
-        return usuarioRepository.save(usuario);
+
+        // Cargar entidad existente y copiar solo campos editables
+        Usuario existente = usuarioRepository.findById(usuario.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        existente.setNombre(usuario.getNombre() != null ? usuario.getNombre() : existente.getNombre());
+        existente.setEmail(usuario.getEmail());
+        existente.setAdmin(usuario.isAdmin());
+        // Si se proporciona contraseña en el payload, actualizarla (codificando si hay encoder)
+        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+            if (passwordEncoder != null) existente.setPassword(passwordEncoder.encode(usuario.getPassword()));
+            else existente.setPassword(usuario.getPassword());
+        }
+        // conservar fechaRegistro, activo, avatar y relaciones tal como estaban
+        return usuarioRepository.save(existente);
     }
 
     @Transactional

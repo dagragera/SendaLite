@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin - Rutas</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+</head>
+<body>
+<nav>
+    <a href="/admin">Admin</a> |
+    <a href="/">Rutas</a>
+</nav>
+<h1>Rutas</h1>
+<table>
+    <thead><tr><th>Título</th><th>Autor</th><th>Acciones</th></tr></thead>
+    <tbody>
+        <tr th:each="r : ${rutas}">
+            <td th:text="${r.titulo}">Título</td>
+            <td th:text="${r.autor != null ? r.autor.nombre : 'Anónimo'}">Autor</td>
+            <td>
+                <a th:href="@{'/rutas/' + ${r.idRuta} + '/editar'}">Editar</a>
+                &nbsp;|&nbsp;
+                <button type="button" th:attr="data-id=${r.idRuta}" onclick="deleteRuta(this.getAttribute('data-id'))">Eliminar</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<p><a href="/admin">Volver al panel</a></p>
+<!DOCTYPE html>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var csrfMeta = document.querySelector('meta[name="_csrf"]');
+    var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+    var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+
+    function deleteRuta(id) {
+        if (!confirm('¿Eliminar ruta id=' + id + '?')) return;
+        var headers = {};
+        if (csrfToken) headers[csrfHeaderName] = csrfToken;
+        fetch('/api/rutas/' + id, { method: 'DELETE', credentials: 'include', headers: headers })
+            .then(r => { if (r.status === 204 || r.ok) location.reload(); else r.text().then(t => alert('Error: ' + t)); })
+            .catch(e => alert('Error de red: ' + e));
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin - Panel</title>
+</head>
+<body>
+<nav>
+    <a href="/">Rutas</a> |
+    <span th:if="${currentUser != null and currentUser.admin}"><a href="/usuarios">Usuarios</a> |</span>
+    <a href="/admin/usuarios">Gestionar Usuarios</a> |
+    <a href="/admin/rutas">Gestionar Rutas</a>
+</nav>
+<h1>Panel de administración</h1>
+<p>Usuarios registrados: <strong th:text="${usuariosCount}">0</strong></p>
+<p>Rutas creadas: <strong th:text="${rutasCount}">0</strong></p>
+<p><a href="/">Volver al inicio</a></p>
+</body>
+</html>
+
