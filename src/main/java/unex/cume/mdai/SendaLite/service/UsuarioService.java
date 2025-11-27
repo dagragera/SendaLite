@@ -18,17 +18,11 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Constructor primario para el contexto de aplicación
+    // Constructor: acepta opcionalmente PasswordEncoder para permitir tests con @DataJpaTest
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, Optional<PasswordEncoder> passwordEncoderOptional) {
         this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    // Constructor alternativo para tests (sin PasswordEncoder)
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = null;
+        this.passwordEncoder = passwordEncoderOptional.orElse(null);
     }
 
     @Transactional

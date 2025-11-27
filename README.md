@@ -151,6 +151,31 @@ mvn test
 
 - Si quieres ejecutar la aplicación contra la base de datos MySQL arrancada con Docker, arranca los contenedores y luego lanza la aplicación (por ejemplo desde tu IDE) usando las credenciales del `application.properties`.
 
+## Ejecutar la aplicación Spring Boot (Maven)
+
+Problema común: PowerShell puede responder "'.\mvnw.cmd' no se reconoce..." al ejecutar:
+.\mvnw.cmd spring-boot:run
+
+Soluciones rápidas:
+1. Asegúrate de estar en la carpeta raíz del proyecto (por ejemplo la carpeta que contiene `pom.xml`) y abre como proyecto Maven.
+2. Si el wrapper existe (mvnw.cmd, mvnw, .mvn/wrapper), ejecuta:
+   .\mvnw.cmd spring-boot:run
+
+3. Si no existe el wrapper pero tienes Maven instalado:
+   mvn spring-boot:run
+   —o para generar el wrapper (desde una máquina con Maven):
+   mvn -N io.takari:maven:wrapper
+   Esto crea mvnw, mvnw.cmd y .mvn/wrapper/* en el proyecto.
+
+4. Si no tienes mvn ni wrapper, instala Maven: https://maven.apache.org/install.html
+
+Helper incluido:
+- run-maven.ps1: detecta mvnw.cmd o mvn y ejecuta spring-boot:run automáticamente.
+  Uso:
+    PowerShell> .\run-maven.ps1
+  Para pasar argumentos:
+    PowerShell> .\run-maven.ps1 -ExtraArgs 'spring-boot:run'
+
 ## Notas finales
 
 - He añadido scripts de inicialización en `docker/mysql/init/` y un `src/main/resources/data.sql` con ejemplos que se pueden usar para desarrollo.
@@ -190,8 +215,8 @@ Notas rápidas para el profesor/ayudante:
 - Para inspeccionar el ZIP: descomprimir `entrega2.zip` y abrir el proyecto con IntelliJ o usar los comandos de Maven indicados en este README.
 
 Cómo ejecutar desde IntelliJ (Windows):
-1. File → Open... → seleccionar la carpeta raíz `SendaLite` y abrir como proyecto Maven.
-2. Esperar a que IntelliJ importe el proyecto y descargue dependencias.
+1. File → Open... → seleccionar la carpeta raíz del proyecto (por ejemplo la carpeta que contiene `pom.xml`) y abrir como proyecto Maven.
+2. Esperar a que el IDE importe el proyecto y descargue dependencias.
 3. Para ejecutar los tests: Run → Run 'All Tests' o abrir la clase de test y hacer Run.
 4. Para ejecutar la aplicación: abrir la clase `src/main/java/unex/cume/mdai/SendaLite/SendaLiteApplication.java` y pulsar el botón Run (o Run 'SendaLiteApplication').
 
@@ -200,7 +225,7 @@ Cómo ejecutar desde línea de comandos (Windows PowerShell / cmd.exe):
 - Ejecutar tests (sin Docker, usa H2 embebida):
 
 ```powershell
-# PowerShell
+# PowerShell (desde la raíz del proyecto)
 .\mvnw.cmd test
 ```
 
@@ -212,7 +237,7 @@ mvnw.cmd test
 - Ejecutar la aplicación contra MySQL levantado con Docker:
 
 ```powershell
-# PowerShell
+# PowerShell (desde la raíz del proyecto)
 .\mvnw.cmd spring-boot:run
 ```
 

@@ -9,8 +9,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +24,7 @@ import unex.cume.mdai.SendaLite.service.RutaService;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
-@Import({UsuarioService.class, RutaService.class})
+@Import({UsuarioService.class, RutaService.class, TestConfig.class})
 public class UsuarioTest {
 
 	@Autowired
@@ -57,7 +57,7 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		Set<Comentario> comentarios = new HashSet<>();
+		List<Comentario> comentarios = new ArrayList<>();
 		ruta.setComentarios(comentarios);
 
 		// Crear comentario asociado a la ruta y al usuario
@@ -102,7 +102,7 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		Set<Comentario> comentarios2 = new HashSet<>();
+		List<Comentario> comentarios2 = new ArrayList<>();
 		ruta.setComentarios(comentarios2);
 
 		Comentario c1 = new Comentario();
