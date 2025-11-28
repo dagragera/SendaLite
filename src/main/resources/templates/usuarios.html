@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>Usuarios</title>
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
+<th:block th:replace="fragments/common :: navbar" />
 <h1>Usuarios</h1>
 <ul>
     <li th:each="u : ${usuarios}">
@@ -12,7 +14,6 @@
         <span th:text="' (' + ${u.email} + ')'">(email)</span>
     </li>
 </ul>
-<p><a href="/static">Volver a Rutas</a></p>
+<p><a href="/">Volver a Rutas</a></p>
 </body>
 </html>
-

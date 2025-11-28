@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>Login</title>
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
-<nav>
-    <a href="/">Rutas</a> |
-    <a href="/usuarios">Usuarios</a> |
-    <a href="/register">Registrarse</a>
-</nav>
+<th:block th:replace="fragments/common :: navbar" />
 <h1>Iniciar sesión</h1>
 <div th:if="${param.error}">
     <p style="color:red">Invalid credentials</p>

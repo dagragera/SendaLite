@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>Editar Usuario</title>
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <th:block th:replace="../fragments/common :: headExtras" />
 </head>
 <body>
-<nav>
-    <a href="/admin">Admin</a> |
-    <a href="/admin/usuarios">Usuarios</a>
-</nav>
+<th:block th:replace="../fragments/common :: navbar" />
 <h1>Editar usuario</h1>
 <div th:if="${usuario == null}">
     <p>Usuario no encontrado.</p>

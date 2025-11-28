@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Nueva Ruta'">Ruta</title>
-    <!-- Añadir meta tags CSRF para que JS pueda leerlos -->
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
+<th:block th:replace="fragments/common :: navbar" />
 <h1 th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Crear / Editar Ruta'">Crear / Editar Ruta</h1>
 <!-- Usar JS para enviar JSON al endpoint REST -->
 <div th:with="rutaId=${ruta != null} ? ${ruta.idRuta} : 0">

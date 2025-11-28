@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>Registro</title>
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
-<nav>
-    <a href="/">Rutas</a> |
-    <a href="/usuarios">Usuarios</a> |
-    <a href="/login">Login</a>
-</nav>
+<th:block th:replace="fragments/common :: navbar" />
 <h1>Registro de usuario</h1>
 <div th:if="${error}">
     <p style="color:red" th:text="${error}">Error</p>
@@ -22,4 +19,3 @@
 </form>
 </body>
 </html>
-

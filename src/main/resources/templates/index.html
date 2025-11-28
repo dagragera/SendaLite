@@ -3,26 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>SendaLite - Rutas</title>
-    <!-- CSRF token meta para logout via fetch -->
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
-<nav>
-    <a href="/">Rutas</a> |
-    <span th:if="${currentUser != null and currentUser.admin}"><a href="/usuarios">Usuarios</a> |</span>
-    <a href="/rutas/nueva">Crear Ruta</a> |
-    <span th:if="${currentUser == null}">
-        <a href="/login">Login</a> |
-        <a href="/register">Registrarse</a>
-    </span>
-    <span th:if="${currentUser != null}">
-        <span th:text="${currentUser.nombre}">Usuario</span> |
-        <a href="#" id="logoutLink" onclick="logout();return false;" style="color:#00f;text-decoration:underline;">Logout</a>
-        <span th:if="${currentUser.admin}"> | <a href="/admin">Admin</a></span>
-    </span>
-</nav>
+<th:block th:replace="fragments/common :: navbar" />
 <h1>Rutas disponibles</h1>
 
 <!-- FILTROS: búsqueda y selectores para filtrar en cliente -->

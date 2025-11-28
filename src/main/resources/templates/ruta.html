@@ -3,54 +3,49 @@
 <head>
     <meta charset="UTF-8" />
     <title th:text="${ruta != null ? ruta.titulo : 'Ruta'}">Ruta</title>
-    <!-- Meta tags CSRF para que JS pueda leer token y headerName -->
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <th:block th:replace="fragments/common :: headExtras" />
 </head>
 <body>
-<nav>
-    <a href="/">Rutas</a> |
-    <a href="/usuarios">Usuarios</a> |
-    <span th:if="${currentUser == null}">
-        <a href="/login">Login</a> |
-        <a href="/register">Registrarse</a>
-    </span>
-    <span th:if="${currentUser != null}">
-        <span th:text="${currentUser.nombre}">Usuario</span> |
-        <form th:action="@{/logout}" method="post" style="display:inline">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit" style="background:none;border:none;padding:0;color:#00f;text-decoration:underline;cursor:pointer;">Logout</button>
-        </form>
-        <span th:if="${currentUser.admin}"> | <a href="/admin">Admin</a></span>
-    </span>
-</nav>
+<th:block th:replace="fragments/common :: navbar" />
 <p><a href="/">Volver al inicio</a></p>
 <h1 th:text="${ruta != null ? ruta.titulo : 'Ruta no encontrada'}">Ruta</h1>
 <div th:if="${ruta != null}" id="rutaContainer" th:attr="data-ruta-id=${ruta != null ? ruta.idRuta : -1}">
-    <p><strong>Descripción:</strong> <span th:text="${ruta.descripcion}">Descripción</span></p>
-    <p><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></p>
-    <p><strong>Dificultad:</strong> <span th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span></p>
-    <p><strong>Tipo de actividad:</strong> <span th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : 'No especificado'}">Actividad</span></p>
-    <p><strong>Distancia (km):</strong> <span th:text="${ruta.distanciaKm != null ? ruta.distanciaKm : 'N/D'}">N/D</span></p>
-    <p><strong>Desnivel (m):</strong> <span th:text="${ruta.desnivelM != null ? ruta.desnivelM : 'N/D'}">N/D</span></p>
-    <p><strong>Tiempo estimado (min):</strong> <span th:text="${ruta.tiempoEstimadoMin != null ? ruta.tiempoEstimadoMin : 'N/D'}">N/D</span></p>
-    <p><strong>Ubicación:</strong> <span th:text="${ruta.ubicacion != null ? ruta.ubicacion : 'N/D'}">N/D</span></p>
-    <p><strong>Etiquetas:</strong> <span th:text="${ruta.etiquetas != null ? ruta.etiquetas : 'Ninguna'}">Ninguna</span></p>
-    <p><strong>Fotos:</strong>
-        <span th:if="${ruta.fotos != null}">
-            <span th:each="url : ${#strings.split(ruta.fotos, ',')}">
-                <img th:src="${url.trim()}" alt="foto" style="max-width:200px;display:block;margin-bottom:8px;"/>
-            </span>
-        </span>
-        <span th:if="${ruta.fotos == null}">Ninguna</span>
-    </p>
-    <p><strong>Activa:</strong> <span th:text="${ruta.activa} ? 'Sí' : 'No'">Sí/No</span></p>
-    <p><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></p>
-    <p><strong>Media valoraciones:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></p>
+    <div class="ruta-media">
+        <div th:if="${ruta.fotos != null}">
+            <img th:src="${#strings.split(ruta.fotos, ',')[0].trim()}" alt="Imagen principal" />
+        </div>
+        <div th:if="${ruta.fotos == null}">
+            <img th:src="@{/img/logo/logo.png}" alt="Sin foto" />
+        </div>
+    </div>
+    <div id="rutaDetails">
+        <div class="card">
+            <h2 th:text="${ruta.titulo}">Título</h2>
+            <p th:text="${ruta.descripcion}">Descripción</p>
+            <div class="row">
+                <div class="field"><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></div>
+                <div class="field"><strong>Dificultad:</strong> <span th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span></div>
+                <div class="field"><strong>Actividad:</strong> <span th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : 'No especificado'}">Actividad</span></div>
+            </div>
+            <div class="row">
+                <div class="field"><strong>Distancia (km):</strong> <span th:text="${ruta.distanciaKm != null ? ruta.distanciaKm : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Desnivel (m):</strong> <span th:text="${ruta.desnivelM != null ? ruta.desnivelM : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Tiempo (min):</strong> <span th:text="${ruta.tiempoEstimadoMin != null ? ruta.tiempoEstimadoMin : 'N/D'}">N/D</span></div>
+            </div>
+            <div class="row">
+                <div class="field"><strong>Ubicación:</strong> <span th:text="${ruta.ubicacion != null ? ruta.ubicacion : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Etiquetas:</strong> <span th:text="${ruta.etiquetas != null ? ruta.etiquetas : 'Ninguna'}">Ninguna</span></div>
+            </div>
+            <div class="row">
+                <div class="field"><strong>Activa:</strong> <span th:text="${ruta.activa} ? 'Sí' : 'No'">Sí/No</span></div>
+                <div class="field"><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></div>
+                <div class="field"><strong>Valoración media:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></div>
+            </div>
+        </div>
+    </div>
 
     <h2>Comentarios</h2>
-    <ul>
+    <ul class="comentarios">
         <li th:each="c : ${comentarios}" th:attr="data-comentario-id=${c.idComentario}, data-text=${c.texto}">
             <strong th:text="${c.usuario != null ? c.usuario.nombre : 'Anon'}">Usuario</strong>:
             <span th:text="${c.texto}">Texto</span>
@@ -84,7 +79,7 @@
     </div>
 
     <h2>Valoraciones</h2>
-    <ul>
+    <ul class="valoraciones">
         <li th:each="v : ${valoraciones}" th:attr="data-valoracion-id=${v.idValoracion}, data-usuario-id=${v.usuario != null ? v.usuario.idUsuario : -1}">
             <strong th:text="${v.usuario != null ? v.usuario.nombre : 'Anon'}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
             <span th:if="${currentUser != null and ((v.usuario != null and v.usuario.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
@@ -115,13 +110,14 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         // obtener rutaId desde el atributo data para evitar inline Thymeleaf en JS
-        var rutaId = parseInt(document.getElementById('rutaContainer').dataset.rutaId, 10) || -1;
-        // Usaremos meta tags CSRF en el DOM para obtener token y headerName
-        var csrfMeta = document.querySelector('meta[name="_csrf"]');
-        var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
-        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
-        var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
-        /*]]>*/
+        var _rc = document.getElementById('rutaContainer');
+        var rutaId = _rc ? (parseInt(_rc.dataset.rutaId, 10) || -1) : -1;
+         // Usaremos meta tags CSRF en el DOM para obtener token y headerName
+         var csrfMeta = document.querySelector('meta[name="_csrf"]');
+         var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+         var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+         var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+         /*]]>*/
 
         // DEBUG: imprimir cookies y token
         console.debug('csrfToken (Thymeleaf):', csrfToken);
@@ -145,6 +141,7 @@
             return new Promise((resolve, reject) => {
                 // Primero usar el token inyectado por Thymeleaf en meta si está disponible
                 if (csrfToken && csrfToken.trim().length > 0) {
+                    console.debug('ensureCsrf: usando token inyectado por Thymeleaf (meta)');
                     return resolve(sanitizeToken(csrfToken));
                 }
                 // También permitir leer desde la cookie XSRF-TOKEN (CookieCsrfTokenRepository)
@@ -154,12 +151,13 @@
                 fetch(window.location.href, { method: 'GET', credentials: 'include' })
                     .then(() => {
                         const tok = getCookie('XSRF-TOKEN');
+                        console.debug('ensureCsrf: cookie XSRF-TOKEN tras GET ->', tok);
                         if (tok) resolve(sanitizeToken(tok));
                         else reject(new Error('No se pudo obtener XSRF-TOKEN'));
                     })
                     .catch(err => reject(err));
-            });
-        }
+             });
+         }
 
         function startEditComentario(id) {
             // Si id es 0 (por Thymeleaf placeholder) se intenta coger desde el DOM en el evento
@@ -206,37 +204,55 @@
                 const headers = { 'Content-Type': 'application/json' };
                 const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
                 if (csrf) headers[headerName] = csrf;
+                console.debug('enviarComentario: headers=', headers);
 
                 if (editingComentarioId) {
                     // actualizar comentario existente via PUT
-                    fetch('/api/rutas/' + rutaId + '/comentarios/' + editingComentarioId, {
-                        method: 'PUT',
-                        credentials: 'include',
-                        headers: headers,
-                        body: JSON.stringify({ texto: texto })
+                    const url = '/api/rutas/' + rutaId + '/comentarios/' + editingComentarioId;
+                    console.debug('enviarComentario: PUT', url, JSON.stringify({ texto: texto }));
+                    fetch(url, {
+                         method: 'PUT',
+                         credentials: 'include',
+                         headers: headers,
+                         body: JSON.stringify({ texto: texto })
                     }).then(r => {
+                        console.debug('enviarComentario: respuesta status=', r.status);
                         if (r.ok) {
                             location.reload();
                         } else {
-                            r.text().then(t => alert('Error al modificar comentario: ' + (t || r.statusText)));
+                            r.text().then(t => alert('Error al modificar comentario: ' + r.status + ' - ' + (t || r.statusText)));
                         }
                     }).catch(e => alert('Error de red al modificar comentario: ' + e));
-                } else {
-                    // crear nuevo comentario via POST
-                    fetch('/api/rutas/' + rutaId + '/comentarios', {
+                 } else {
+                     // crear nuevo comentario via POST
+                    const url = '/api/rutas/' + rutaId + '/comentarios';
+                    console.debug('enviarComentario: POST', url, JSON.stringify({ texto: texto }));
+                    fetch(url, {
                         method: 'POST',
                         credentials: 'include',
                         headers: headers,
                         body: JSON.stringify({ texto: texto })
-                    }).then(r => {
-                        if (r.ok) {
+                    }).then(async r => {
+                        console.debug('enviarComentario POST status=', r.status);
+                        const ct = r.headers.get('content-type') || '';
+                        if (ct.indexOf('text/html') !== -1) {
+                            alert('Parece que no estás autenticado. Se abrirá la página de login.');
+                            window.location = '/login';
+                            return;
+                        }
+                        if (r.status === 201 || r.ok) {
                             location.reload();
+                        } else if (r.status === 401 || r.status === 403) {
+                            const t = await r.text();
+                            alert('No autorizado: ' + (t || r.statusText));
+                            window.location = '/login';
                         } else {
-                            r.text().then(t => alert('Error al añadir comentario: ' + (t || r.statusText)));
+                            const t = await r.text();
+                            alert('Error al añadir comentario: ' + r.status + ' - ' + (t || r.statusText));
                         }
                     }).catch(e => alert('Error de red al añadir comentario: ' + e));
-                }
-            }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
+                 }
+             }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
 
             return false;
         }
@@ -251,17 +267,30 @@
                 const headers = { 'Content-Type': 'application/json' };
                 const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
                 if (csrf) headers[headerName] = csrf;
-
-                fetch('/api/rutas/' + rutaId + '/valoraciones', {
+                const url = '/api/rutas/' + rutaId + '/valoraciones';
+                console.debug('enviarValoracion: POST', url, JSON.stringify({ puntuacion: puntuacion }), 'headers=', headers);
+                fetch(url, {
                     method: 'POST',
                     credentials: 'include',
                     headers: headers,
                     body: JSON.stringify({ puntuacion: puntuacion })
-                }).then(r => {
-                    if (r.ok) {
+                }).then(async r => {
+                    console.debug('enviarValoracion status=', r.status);
+                    const ct = r.headers.get('content-type') || '';
+                    if (ct.indexOf('text/html') !== -1) {
+                        alert('Parece que no estás autenticado. Ir a login.');
+                        window.location = '/login';
+                        return;
+                    }
+                    if (r.status === 201 || r.ok) {
                         location.reload();
+                    } else if (r.status === 401 || r.status === 403) {
+                        const t = await r.text();
+                        alert('No autorizado: ' + (t || r.statusText));
+                        window.location = '/login';
                     } else {
-                        r.text().then(t => alert('Error al añadir/actualizar valoración: ' + (t || r.statusText)));
+                        const t = await r.text();
+                        alert('Error al añadir/actualizar valoración: ' + r.status + ' - ' + (t || r.statusText));
                     }
                 }).catch(e => alert('Error de red al añadir valoración: ' + e));
             }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
@@ -276,13 +305,15 @@
                 const headers = {};
                 const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
                 if (csrf) headers[headerName] = csrf;
-                fetch('/api/rutas/' + rutaId + '/comentarios/' + id, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: headers
-                }).then(r => {
-                    if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar comentario: ' + (t || r.statusText)));
-                }).catch(e => alert('Error de red al eliminar comentario: ' + e));
+                const url = '/api/rutas/' + rutaId + '/comentarios/' + id;
+                console.debug('deleteComentario: DELETE', url);
+                fetch(url, {
+                     method: 'DELETE',
+                     credentials: 'include',
+                     headers: headers
+                 }).then(r => {
+                     if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar comentario: ' + (t || r.statusText)));
+                 }).catch(e => alert('Error de red al eliminar comentario: ' + e));
             }).catch(err => alert('No se obtuvo token CSRF: ' + err));
         }
 
@@ -293,13 +324,15 @@
                 const headers = {};
                 const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
                 if (csrf) headers[headerName] = csrf;
-                fetch('/api/rutas/' + rutaId + '/valoraciones/' + id, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: headers
-                }).then(r => {
-                    if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar valoración: ' + (t || r.statusText)));
-                }).catch(e => alert('Error de red al eliminar valoración: ' + e));
+                const url = '/api/rutas/' + rutaId + '/valoraciones/' + id;
+                console.debug('deleteValoracion: DELETE', url);
+                fetch(url, {
+                     method: 'DELETE',
+                     credentials: 'include',
+                     headers: headers
+                 }).then(r => {
+                     if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar valoración: ' + (t || r.statusText)));
+                 }).catch(e => alert('Error de red al eliminar valoración: ' + e));
             }).catch(err => alert('No se obtuvo token CSRF: ' + err));
         }
 
@@ -309,17 +342,19 @@
                 const headers = {};
                 const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
                 if (csrf) headers[headerName] = csrf;
-                fetch('/api/rutas/' + rutaId, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: headers
-                }).then(r => {
-                    if (r.status === 204 || r.ok) {
-                        window.location = '/';
-                    } else {
-                        r.text().then(t => alert('Error al eliminar ruta: ' + (t || r.statusText)));
-                    }
-                }).catch(e => alert('Error de red al eliminar ruta: ' + e));
+                const url = '/api/rutas/' + rutaId;
+                console.debug('deleteRuta: DELETE', url);
+                fetch(url, {
+                     method: 'DELETE',
+                     credentials: 'include',
+                     headers: headers
+                 }).then(r => {
+                     if (r.status === 204 || r.ok) {
+                         window.location = '/';
+                     } else {
+                         r.text().then(t => alert('Error al eliminar ruta: ' + (t || r.statusText)));
+                     }
+                 }).catch(e => alert('Error de red al eliminar ruta: ' + e));
             }).catch(err => alert('No se obtuvo token CSRF: ' + err));
         }
     </script>
