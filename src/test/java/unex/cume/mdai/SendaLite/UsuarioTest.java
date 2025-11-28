@@ -9,8 +9,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,7 +57,7 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		List<Comentario> comentarios = new ArrayList<>();
+		Set<Comentario> comentarios = new HashSet<>();
 		ruta.setComentarios(comentarios);
 
 		// Crear comentario asociado a la ruta y al usuario
@@ -102,7 +102,7 @@ public class UsuarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		List<Comentario> comentarios2 = new ArrayList<>();
+		Set<Comentario> comentarios2 = new HashSet<>();
 		ruta.setComentarios(comentarios2);
 
 		Comentario c1 = new Comentario();

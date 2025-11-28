@@ -1,7 +1,7 @@
 package unex.cume.mdai.SendaLite;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +57,7 @@ public class RutaTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setValoraciones(new ArrayList<>());
+		ruta.setValoraciones(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
@@ -95,7 +95,7 @@ public class RutaTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setValoraciones(new ArrayList<>());
+		ruta.setValoraciones(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Valoracion v1 = new Valoracion();

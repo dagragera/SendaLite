@@ -1,8 +1,8 @@
 package unex.cume.mdai.SendaLite;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ public class ComentarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		ruta.setComentarios(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Comentario c = new Comentario();
@@ -70,7 +70,7 @@ public class ComentarioTest {
 		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
-		List<Comentario> resultados = entityManager.getEntityManager()
+		java.util.List<Comentario> resultados = entityManager.getEntityManager()
 				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.titulo = :t", Comentario.class)
 				.setParameter("t", "Ruta Comentarios")
 				.getResultList();
@@ -96,7 +96,7 @@ public class ComentarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		ruta.setComentarios(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Comentario c1 = new Comentario();
@@ -118,7 +118,7 @@ public class ComentarioTest {
 		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
-		List<Comentario> after = entityManager.getEntityManager()
+		java.util.List<Comentario> after = entityManager.getEntityManager()
 				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.idRuta = :rid", Comentario.class)
 				.setParameter("rid", rutaId)
 				.getResultList();
@@ -143,7 +143,7 @@ public class ComentarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		ruta.setComentarios(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Comentario c = new Comentario();
@@ -155,7 +155,7 @@ public class ComentarioTest {
 		entityManager.getEntityManager().flush();
 		entityManager.clear();
 
-		List<Comentario> results = entityManager.getEntityManager()
+		java.util.List<Comentario> results = entityManager.getEntityManager()
 				.createQuery("SELECT c FROM Comentario c WHERE c.texto = :txt", Comentario.class)
 				.setParameter("txt", "Comentario básico")
 				.getResultList();
@@ -181,7 +181,7 @@ public class ComentarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		ruta.setComentarios(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Comentario c = new Comentario();
@@ -221,7 +221,7 @@ public class ComentarioTest {
         ruta.setDificultad(Dificultad.MEDIA);
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
-		ruta.setComentarios(new ArrayList<>());
+		ruta.setComentarios(new HashSet<>());
 		rutaService.anadirRuta(ruta);
 
 		Comentario c = new Comentario();

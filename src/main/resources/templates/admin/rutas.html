@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <title>Admin - Rutas</title>
-    <th:block th:replace="../fragments/common :: headExtras" />
+    <th:block th:replace="~{fragments/common :: headExtras}" />
 </head>
 <body>
-<th:block th:replace="../fragments/common :: navbar" />
+<th:block th:replace="~{fragments/common :: navbar}" />
 <h1>Rutas</h1>
 <table>
     <thead><tr><th>Título</th><th>Autor</th><th>Acciones</th></tr></thead>
@@ -15,7 +15,8 @@
             <td th:text="${r.titulo}">Título</td>
             <td th:text="${r.autor != null ? r.autor.nombre : 'Anónimo'}">Autor</td>
             <td>
-                <a th:href="@{'/rutas/' + ${r.idRuta} + '/editar'}">Editar</a>
+                <!-- Usar sintaxis de Thymeleaf para path variables en lugar de concatenación -->
+                <a th:href="@{/admin/rutas/{id}/editar(id=${r.idRuta})}">Editar</a>
                 &nbsp;|&nbsp;
                 <button type="button" th:attr="data-id=${r.idRuta}" onclick="deleteRuta(this.getAttribute('data-id'))">Eliminar</button>
             </td>

@@ -17,6 +17,8 @@
             </a>
             <a th:href="@{/}">Rutas</a>
             <a th:href="@{/rutas/nueva}">Crear Ruta</a>
+            <!-- Enlace al panel de administración sólo visible para usuarios admin -->
+            <a th:if="${currentUser != null and currentUser.admin}" th:href="@{/admin}">Admin</a>
         </div>
         <div class="nav-actions" style="margin-left:auto;display:flex;align-items:center;gap:12px;">
             <span th:if="${currentUser == null}">No estás logueado - <a th:href="@{/login}">Login</a> | <a th:href="@{/register}">Registro</a></span>

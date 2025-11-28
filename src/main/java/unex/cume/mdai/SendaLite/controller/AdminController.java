@@ -47,4 +47,10 @@ public class AdminController {
         model.addAttribute("rutas", rutaService.listAll());
         return "admin/rutas";
     }
+
+    @GetMapping("/admin/rutas/{id}/editar")
+    public String adminEditarRuta(@PathVariable Long id, Model model) {
+        model.addAttribute("ruta", rutaService.findById(id).orElse(null));
+        return "ruta_form";
+    }
 }
