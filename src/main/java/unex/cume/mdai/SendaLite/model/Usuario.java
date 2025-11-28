@@ -3,7 +3,8 @@ package unex.cume.mdai.SendaLite.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -38,15 +39,15 @@ public class Usuario {
     // Relaciones con otras entidades
     @JsonIgnore
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Ruta> rutas;
+    private Set<Ruta> rutas = new HashSet<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
+    private Set<Comentario> comentarios = new HashSet<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Valoracion> valoraciones;
+    private Set<Valoracion> valoraciones = new HashSet<>();
 
     // Getters y setters
 
@@ -114,27 +115,27 @@ public class Usuario {
         this.admin = admin;
     }
 
-    public List<Ruta> getRutas() {
+    public Set<Ruta> getRutas() {
         return rutas;
     }
 
-    public void setRutas(List<Ruta> rutas) {
+    public void setRutas(Set<Ruta> rutas) {
         this.rutas = rutas;
     }
 
-    public List<Comentario> getComentarios() {
+    public Set<Comentario> getComentarios() {
         return comentarios;
     }
 
-    public void setComentarios(List<Comentario> comentarios) {
+    public void setComentarios(Set<Comentario> comentarios) {
         this.comentarios = comentarios;
     }
 
-    public List<Valoracion> getValoraciones() {
+    public Set<Valoracion> getValoraciones() {
         return valoraciones;
     }
 
-    public void setValoraciones(List<Valoracion> valoraciones) {
+    public void setValoraciones(Set<Valoracion> valoraciones) {
         this.valoraciones = valoraciones;
     }
 }

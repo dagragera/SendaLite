@@ -3,8 +3,8 @@ package unex.cume.mdai.SendaLite.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -65,14 +65,14 @@ public class Ruta {
     @Column(nullable = false)
     private boolean activa;
 
-    // Relaciones con otras entidades: usar List para compatibilidad con tests y Thymeleaf
+    // Relaciones con otras entidades: usar Set para evitar MultipleBagFetchException
     @JsonIgnore
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios = new ArrayList<>();
+    private Set<Comentario> comentarios = new HashSet<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Valoracion> valoraciones = new ArrayList<>();
+    private Set<Valoracion> valoraciones = new HashSet<>();
 
     // Getters y setters
 
@@ -205,20 +205,20 @@ public class Ruta {
     }
 
     @JsonIgnore
-    public List<Comentario> getComentarios() {
+    public Set<Comentario> getComentarios() {
         return comentarios;
     }
 
-    public void setComentarios(List<Comentario> comentarios) {
+    public void setComentarios(Set<Comentario> comentarios) {
         this.comentarios = comentarios;
     }
 
     @JsonIgnore
-    public List<Valoracion> getValoraciones() {
+    public Set<Valoracion> getValoraciones() {
         return valoraciones;
     }
 
-    public void setValoraciones(List<Valoracion> valoraciones) {
+    public void setValoraciones(Set<Valoracion> valoraciones) {
         this.valoraciones = valoraciones;
     }
 }

@@ -1,0 +1,50 @@
+/* Estilos básicos para SendaLite - archivo creado automáticamente */
+:root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --accent:#2b7a78;
+    --muted:#6b7280;
+    --border:#e6e9ee;
+    --radius:8px;
+}
+html,body{
+    height:100%;
+    margin:0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:var(--bg);
+    color:#111827;
+}
+nav{
+    background:linear-gradient(90deg, #ffffff, #f8fafc);
+    border-bottom:1px solid var(--border);
+    padding:12px 18px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+nav a{ color:var(--accent); text-decoration:none; font-weight:600 }
+h1{ margin:18px; font-size:1.6rem }
+.container{ max-width:1100px; margin:12px auto; padding:0 16px }
+table{ width:100%; border-collapse:collapse; background:transparent }
+table thead tr{ background:transparent }
+table th, table td{ text-align:left; padding:10px; border-bottom:1px solid var(--border) }
+tr:nth-child(even) td{ background:#ffffff; }
+tr td a { color:var(--accent); text-decoration:none; font-weight:600 }
+/* Filters */
+div[style*="margin-bottom"]{ background:var(--card); border:1px solid var(--border); padding:10px; border-radius:var(--radius); margin:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+input[type=text], input[type=number], select, textarea{ padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:white }
+button{ background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer }
+button[th\:if="${currentUser == null}"]{ opacity:0.6 }
+a.button-like{ background:var(--card); border:1px solid var(--border); padding:6px 8px; border-radius:6px; color:var(--accent) }
+/* Ruta detail */
+#rutaContainer{ background:var(--card); border-radius:var(--radius); padding:16px; margin:12px }
+#rutaContainer img{ max-width:220px; border-radius:6px; margin-right:8px }
+/* Forms */
+form label{ display:block; margin:6px 0 }
+textarea{ min-height:100px }
+/* Responsive */
+@media (max-width:700px){
+    nav{ flex-wrap:wrap }
+    div[style*="margin-bottom"]{ flex-direction:column; align-items:stretch }
+}
+

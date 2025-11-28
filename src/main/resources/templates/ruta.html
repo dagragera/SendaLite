@@ -6,6 +6,7 @@
     <!-- Meta tags CSRF para que JS pueda leer token y headerName -->
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
 <nav>
@@ -28,6 +29,23 @@
 <h1 th:text="${ruta != null ? ruta.titulo : 'Ruta no encontrada'}">Ruta</h1>
 <div th:if="${ruta != null}" id="rutaContainer" th:attr="data-ruta-id=${ruta != null ? ruta.idRuta : -1}">
     <p><strong>Descripción:</strong> <span th:text="${ruta.descripcion}">Descripción</span></p>
+    <p><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></p>
+    <p><strong>Dificultad:</strong> <span th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span></p>
+    <p><strong>Tipo de actividad:</strong> <span th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : 'No especificado'}">Actividad</span></p>
+    <p><strong>Distancia (km):</strong> <span th:text="${ruta.distanciaKm != null ? ruta.distanciaKm : 'N/D'}">N/D</span></p>
+    <p><strong>Desnivel (m):</strong> <span th:text="${ruta.desnivelM != null ? ruta.desnivelM : 'N/D'}">N/D</span></p>
+    <p><strong>Tiempo estimado (min):</strong> <span th:text="${ruta.tiempoEstimadoMin != null ? ruta.tiempoEstimadoMin : 'N/D'}">N/D</span></p>
+    <p><strong>Ubicación:</strong> <span th:text="${ruta.ubicacion != null ? ruta.ubicacion : 'N/D'}">N/D</span></p>
+    <p><strong>Etiquetas:</strong> <span th:text="${ruta.etiquetas != null ? ruta.etiquetas : 'Ninguna'}">Ninguna</span></p>
+    <p><strong>Fotos:</strong>
+        <span th:if="${ruta.fotos != null}">
+            <span th:each="url : ${#strings.split(ruta.fotos, ',')}">
+                <img th:src="${url.trim()}" alt="foto" style="max-width:200px;display:block;margin-bottom:8px;"/>
+            </span>
+        </span>
+        <span th:if="${ruta.fotos == null}">Ninguna</span>
+    </p>
+    <p><strong>Activa:</strong> <span th:text="${ruta.activa} ? 'Sí' : 'No'">Sí/No</span></p>
     <p><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></p>
     <p><strong>Media valoraciones:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></p>
 

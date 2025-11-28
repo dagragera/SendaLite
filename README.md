@@ -44,7 +44,7 @@ Permitirá a los usuarios:
 
 ### Filtrar rutas por dificultad
 
-- Filtrado por **fácil**, **media** y **difícil**, según nivel de preparación o preferencia de desafío.  
+- Filtrado por **fácil**, **media** y **difícil**.
 
 ### Ver ficha de ruta
 
@@ -66,8 +66,7 @@ Pantalla detallada con la información de una ruta específica, similar a una fi
 
 - Sistema de autenticación tradicional.  
 - Email y contraseña obligatorios.  
-- Email de verificación (opcional pero recomendado).  
-- Tras la verificación, acceso al resto de funcionalidades.  
+- Tras loguearse, acceso al resto de funcionalidades.  
 
 ### Perfil de usuario
 
@@ -77,21 +76,23 @@ Espacio personal donde cada usuario gestiona su identidad y contenido:
 
 ### Crear ruta (usuarios autenticados)
 
-- Formulario con campos obligatorios y opcionales.  
-- Validación de datos.  
-- Previsualización antes de publicar.  
-- Confirmación de publicación.  
+- Formulario con campos obligatorios y opcionales.
+- Confirmación de publicación ************  
 
 ### Editar/eliminar rutas propias
 
-- Solo el **autor** puede editar o eliminar sus rutas.  
+- Solo el **autor** o el administrador puede editar o eliminar sus rutas.  
 
 ### Búsqueda por texto
 
 Motor de búsqueda con varios criterios:  
-- **Título:** palabras clave en el nombre.  
-- **Ubicación:** zona geográfica o nombre del lugar.  
-- **Etiquetas:** palabras clave asociadas (montaña,     bosque, etc.).  
+- **Nombre:** palabras clave en el nombre.  
+- Dificultad
+- Actividad
+- Kms
+- 
+- **:** zona geográfica o nombre del lugar.  
+- **:** palabras clave asociadas (montaña,     bosque, etc.).  
 
 ## Funcionalidades opcionales, recomendables o futuribles
 
@@ -157,24 +158,27 @@ Problema común: PowerShell puede responder "'.\mvnw.cmd' no se reconoce..." al 
 .\mvnw.cmd spring-boot:run
 
 Soluciones rápidas:
-1. Asegúrate de estar en la carpeta raíz del proyecto (por ejemplo la carpeta que contiene `pom.xml`) y abre como proyecto Maven.
-2. Si el wrapper existe (mvnw.cmd, mvnw, .mvn/wrapper), ejecuta:
-   .\mvnw.cmd spring-boot:run
+1. Asegúrate de estar en la carpeta raíz del proyecto (la que contiene `pom.xml`).
+2. Si el wrapper existe (mvnw.cmd, mvnw, .mvn/wrapper), ejecuta desde la raíz del proyecto:
+
+   ```powershell
+   .\mvnw.cmd spring-boot:run -DskipTests
+   ```
 
 3. Si no existe el wrapper pero tienes Maven instalado:
-   mvn spring-boot:run
-   —o para generar el wrapper (desde una máquina con Maven):
-   mvn -N io.takari:maven:wrapper
-   Esto crea mvnw, mvnw.cmd y .mvn/wrapper/* en el proyecto.
+   ```powershell
+   mvn spring-boot:run -DskipTests
+   ```
 
 4. Si no tienes mvn ni wrapper, instala Maven: https://maven.apache.org/install.html
 
 Helper incluido:
-- run-maven.ps1: detecta mvnw.cmd o mvn y ejecuta spring-boot:run automáticamente.
-  Uso:
-    PowerShell> .\run-maven.ps1
-  Para pasar argumentos:
-    PowerShell> .\run-maven.ps1 -ExtraArgs 'spring-boot:run'
+- `run-maven.ps1`: detecta `mvnw.cmd` o `mvn` y ejecuta `spring-boot:run` automáticamente.
+  Uso desde la raíz del proyecto:
+
+```powershell
+.\run-maven.ps1
+```
 
 ## Notas finales
 

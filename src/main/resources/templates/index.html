@@ -6,6 +6,7 @@
     <!-- CSRF token meta para logout via fetch -->
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
 <nav>
@@ -23,6 +24,34 @@
     </span>
 </nav>
 <h1>Rutas disponibles</h1>
+
+<!-- FILTROS: búsqueda y selectores para filtrar en cliente -->
+<div style="margin-bottom:12px;">
+    <label>Nombre: <input id="filterNombre" type="text" placeholder="Buscar por título..." /></label>
+    <label>Dificultad:
+        <select id="filterDificultad">
+            <option value="">(todas)</option>
+            <option value="FACIL">Fácil</option>
+            <option value="MEDIA">Media</option>
+            <option value="DIFICIL">Difícil</option>
+        </select>
+    </label>
+    <label>Actividad:
+        <select id="filterActividad">
+            <option value="">(todas)</option>
+            <option value="SENDERISMO">Senderismo</option>
+            <option value="CICLISMO">Ciclismo</option>
+            <option value="CORRER">Correr</option>
+            <option value="ESCALADA">Escalada</option>
+            <option value="OTRO">Otro</option>
+        </select>
+    </label>
+    <label>Km min: <input id="filterMinKm" type="number" step="0.1" min="0" style="width:80px;" /></label>
+    <label>Km max: <input id="filterMaxKm" type="number" step="0.1" min="0" style="width:80px;" /></label>
+    <button id="btnAplicarFiltro">Aplicar</button>
+    <button id="btnLimpiarFiltro">Limpiar</button>
+</div>
+
 <div>
     <table border="1" cellpadding="6" cellspacing="0">
         <thead>
@@ -38,7 +67,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="ruta : ${rutas}">
+            <tr th:each="ruta : ${rutas}"
+                th:attr="data-titulo=${ruta.titulo}, data-dificultad=${ruta.dificultad != null ? ruta.dificultad.name() : ''}, data-actividad=${ruta.tipoActividad != null ? ruta.tipoActividad.name() : ''}, data-distancia=${ruta.distanciaKm}">
                 <td><a th:href="@{'/rutas/' + ${ruta.idRuta}}" th:text="${ruta.titulo}">Ruta</a></td>
                 <td th:text="${ruta.descripcion}">Descripción</td>
                 <td th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : ''}">Actividad</td>
@@ -64,6 +94,47 @@
             .then(r => { window.location = '/'; })
             .catch(e => { alert('Error al hacer logout: ' + e); });
     }
+
+    // Funciones de filtrado en cliente
+    function aplicarFiltro() {
+        var nombre = (document.getElementById('filterNombre').value || '').toLowerCase();
+        var dificultad = document.getElementById('filterDificultad').value || '';
+        var actividad = document.getElementById('filterActividad').value || '';
+        var minKm = parseFloat(document.getElementById('filterMinKm').value);
+        var maxKm = parseFloat(document.getElementById('filterMaxKm').value);
+        if (isNaN(minKm)) minKm = null;
+        if (isNaN(maxKm)) maxKm = null;
+
+        var rows = document.querySelectorAll('table tbody tr');
+        rows.forEach(function(row) {
+            var titulo = (row.getAttribute('data-titulo') || '').toLowerCase();
+            var rowDificultad = row.getAttribute('data-dificultad') || '';
+            var rowActividad = row.getAttribute('data-actividad') || '';
+            var distanciaRaw = row.getAttribute('data-distancia');
+            var rowKm = distanciaRaw ? parseFloat(distanciaRaw) : null;
+
+            var ok = true;
+            if (nombre && !titulo.includes(nombre)) ok = false;
+            if (dificultad && rowDificultad !== dificultad) ok = false;
+            if (actividad && rowActividad !== actividad) ok = false;
+            if (minKm !== null && (rowKm === null || rowKm < minKm)) ok = false;
+            if (maxKm !== null && (rowKm === null || rowKm > maxKm)) ok = false;
+
+            row.style.display = ok ? '' : 'none';
+        });
+    }
+
+    function limpiarFiltro() {
+        document.getElementById('filterNombre').value = '';
+        document.getElementById('filterDificultad').value = '';
+        document.getElementById('filterActividad').value = '';
+        document.getElementById('filterMinKm').value = '';
+        document.getElementById('filterMaxKm').value = '';
+        aplicarFiltro();
+    }
+
+    document.getElementById('btnAplicarFiltro').addEventListener('click', function(e) { e.preventDefault(); aplicarFiltro(); });
+    document.getElementById('btnLimpiarFiltro').addEventListener('click', function(e) { e.preventDefault(); limpiarFiltro(); });
     /*]]>*/
 </script>
 </body>
