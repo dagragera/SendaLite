@@ -157,6 +157,7 @@ a.button-like{
     gap:16px;
     align-items:flex-start;
     box-shadow: var(--shadow);
+    flex-direction:row; /* por defecto fila en desktop */
 }
 #rutaContainer img{
     max-width:260px;
@@ -167,12 +168,36 @@ a.button-like{
 #rutaContainer{ display:flex; gap:18px; align-items:flex-start }
 #rutaContainer .ruta-media{ flex:0 0 320px }
 #rutaContainer .ruta-media img{ width:100%; height:auto; border-radius:8px }
+#rutaContainer .ruta-media-placeholder{ flex:0 0 160px }
+#rutaContainer .ruta-media-placeholder .card{ height:120px; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, #f7fafc, #ffffff); color:var(--muted); font-weight:700 }
 #rutaDetails{ flex:1; display:flex; flex-direction:column; gap:8px }
 #rutaDetails .row{ display:flex; gap:12px; flex-wrap:wrap }
-#rutaDetails .field{ min-width:170px }
+#rutaDetails .field{ min-width:140px }
 
 /* Make comments and valorations visually separated */
 #rutaContainer .comentarios, #rutaContainer .valoraciones{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--border) }
+
+/* Comentarios y valoraciones (cuando están fuera de #rutaContainer) */
+.comentarios, .valoraciones {
+    margin-top:16px;
+    padding-top:12px;
+    border-top:1px dashed var(--border);
+    list-style:none;
+    padding-left:0;
+}
+.comentarios li, .valoraciones li {
+    padding:10px 12px;
+    border-bottom:1px solid rgba(0,0,0,0.03);
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+}
+.comentarios li strong, .valoraciones li strong { color:#073433; font-weight:700; margin-right:8px }
+.comentarios li em { margin-left:8px; color:var(--muted); font-size:0.92rem }
+
+/* Separación para formularios de comentarios/valoraciones */
+.comentarios + div, .valoraciones + div, .comentarios + h3, .valoraciones + h3 { margin-top:12px }
 
 /* Forms */
 form label{ display:block; margin:8px 0; font-weight:600; color:#073433 }
