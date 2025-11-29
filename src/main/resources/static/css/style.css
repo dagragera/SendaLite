@@ -14,6 +14,8 @@
 html,body{
     height:100%;
     margin:0;
+    padding-left:16px;
+    padding-right:16px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background:var(--bg);
     color:#0f1724;
@@ -56,6 +58,10 @@ table thead tr{ background:transparent }
 table th, table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--border) }
 tr:nth-child(even) td{ background:transparent; }
 tr td a { color:var(--accent-2); text-decoration:none; font-weight:600 }
+
+/* Estilo para la tabla de rutas (reemplaza atributos HTML obsoletos) */
+.routes-table{ width:100%; border-collapse:collapse; }
+.routes-table th, .routes-table td{ padding:12px 14px; border-bottom:1px solid var(--border); text-align:left }
 
 /* Card style for individual route detail or list items */
 .card{
@@ -212,6 +218,49 @@ textarea{ min-height:120px; padding:10px; border-radius:8px }
     font-weight:700;
     font-size:.85rem;
 }
+
+/* Avatar small */
+.avatar{ width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px; flex-shrink:0 }
+.item-left{ display:flex; align-items:flex-start; gap:10px }
+.item-content{ display:flex; flex-direction:column }
+.item-actions{ display:flex; align-items:center; gap:8px }
+
+/* Stars */
+.stars, .stars-inline { display:inline-flex; gap:4px; color:#f59e0b; font-size:1rem }
+.star { color: #d1d5db; font-size:1rem }
+.star.filled { color:#f59e0b }
+
+/* Read more */
+.read-more-toggle { color:var(--accent); cursor:pointer; margin-left:8px; font-weight:700 }
+
+/* Upload placeholder button */
+#uploadPhotoBtn{ background:transparent; color:var(--accent-2); border:1px solid var(--border); padding:6px 8px; border-radius:8px; cursor:pointer }
+
+/* Focus visible para accesibilidad */
+:focus {
+    outline: 3px solid rgba(31,122,116,0.22);
+    outline-offset: 2px;
+}
+
+a:focus, button:focus, input:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(31,122,116,0.06);
+}
+
+/* Alinear brand logo y texto correctamente */
+.brand-logo{ height:36px; width:auto; display:inline-block }
+.brand-text{ font-weight:800; color:#043534; margin-left:6px; display:inline-block }
+
+/* Mejora contraste en navbar links */
+nav a{ color:var(--accent); }
+
+/* Estilos para el selector interactivo de estrellas */
+.star-input { display:inline-flex; gap:6px; align-items:center }
+.star-input .star { font-size:1.6rem; background:transparent; border:none; cursor:pointer; color:#d1d5db }
+.star-input .star.filled { color:#f59e0b; }
+.star-input .star:focus { outline: 2px solid rgba(31,122,116,0.22); }
+
+/* Screen-reader only helper */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0 }
 
 /* Responsive */
 @media (max-width:1000px){

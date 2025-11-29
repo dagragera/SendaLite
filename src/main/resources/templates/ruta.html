@@ -13,11 +13,17 @@
     <!-- Imagen deshabilitada por ahora: mostramos un placeholder simple en su lugar -->
     <div class="ruta-media-placeholder">
         <div class="card" style="text-align:center;color:var(--muted);padding:12px;">Sin foto por ahora</div>
+        <div style="margin-top:10px; text-align:center;">
+            <input id="uploadPhotoInput" type="file" style="display:none" aria-hidden="true" />
+            <button id="uploadPhotoBtn" type="button" th:if="${currentUser != null}" aria-label="Subir foto (placeholder)">Subir foto (placeholder)</button>
+            <a th:if="${currentUser == null}" th:href="@{/login}" class="button-like">Inicia sesión para subir fotos</a>
+        </div>
     </div>
     <div id="rutaDetails">
         <div class="card">
             <h2 th:text="${ruta.titulo}">Título</h2>
-            <p th:text="${ruta.descripcion}">Descripción</p>
+            <p class="descripcion" th:text="${ruta.descripcion}">Descripción</p>
+            <button type="button" class="read-more-toggle" style="display:none" aria-expanded="false" aria-controls="descripcion">Leer más</button>
             <div class="row">
                 <div class="field"><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></div>
                 <div class="field"><strong>Dificultad:</strong> <span th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span></div>
@@ -35,7 +41,12 @@
             <div class="row">
                 <div class="field"><strong>Activa:</strong> <span th:text="${ruta.activa} ? 'Sí' : 'No'">Sí/No</span></div>
                 <div class="field"><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></div>
-                <div class="field"><strong>Valoración media:</strong> <span th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span></div>
+                <div class="field"><strong>Valoración media:</strong>
+                    <span class="media-rating" th:attr="data-media=${media}">
+                        <span class="stars" aria-hidden="true"></span>
+                        &nbsp;<span class="media-number" th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -44,18 +55,23 @@
 <h2>Comentarios</h2>
 <ul class="comentarios">
     <li th:each="c : ${comentarios}" th:attr="data-comentario-id=${c.idComentario}, data-text=${c.texto}">
-        <strong th:text="${c.usuario != null ? c.usuario.nombre : 'Anon'}">Usuario</strong>:
-        <span th:text="${c.texto}">Texto</span>
-        <em th:text="${c.fechaComentario}">fecha</em>
-        <!-- Mostrar botón Editar/Eliminar sólo si el usuario actual es el autor -->
-        <span th:if="${currentUser != null and c.usuario != null and c.usuario.idUsuario == currentUser.idUsuario}">
-            &nbsp;<button type="button" th:attr="data-edit-id=${c.idComentario}" onclick="startEditComentario(this.dataset.editId)">Editar</button>
-            &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar</button>
-        </span>
-        <!-- Admin puede eliminar cualquier comentario -->
-        <span th:if="${currentUser != null and currentUser.admin}">
-            &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar (admin)</button>
-        </span>
+        <div class="item-left">
+            <img loading="lazy" class="avatar" th:src="@{/img/avatar-default.svg}" alt="Avatar de usuario" />
+            <div class="item-content">
+                <strong th:text="${c.usuario != null ? c.usuario.nombre : 'Anon'}">Usuario</strong>:
+                <span th:text="${c.texto}">Texto</span>
+                <em th:text="${c.fechaComentario}">fecha</em>
+            </div>
+        </div>
+        <div class="item-actions">
+            <span th:if="${currentUser != null and c.usuario != null and c.usuario.idUsuario == currentUser.idUsuario}">
+                &nbsp;<button type="button" th:attr="data-edit-id=${c.idComentario}" onclick="startEditComentario(this.dataset.editId)">Editar</button>
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar</button>
+            </span>
+            <span th:if="${currentUser != null and currentUser.admin}">
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar (admin)</button>
+            </span>
+        </div>
     </li>
 </ul>
 
@@ -78,10 +94,17 @@
 <h2>Valoraciones</h2>
 <ul class="valoraciones">
     <li th:each="v : ${valoraciones}" th:attr="data-valoracion-id=${v.idValoracion}, data-usuario-id=${v.usuario != null ? v.usuario.idUsuario : -1}">
-        <strong th:text="${v.usuario != null ? v.usuario.nombre : 'Anon'}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
-        <span th:if="${currentUser != null and ((v.usuario != null and v.usuario.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
-            &nbsp;<button type="button" th:attr="data-del-id=${v.idValoracion}" onclick="deleteValoracion(this.dataset.delId)">Eliminar</button>
-        </span>
+        <div class="item-left">
+            <img loading="lazy" class="avatar" th:src="@{/img/avatar-default.svg}" alt="Avatar de usuario" />
+            <div class="item-content">
+                <strong th:text="${v.usuario != null ? v.usuario.nombre : 'Anon'}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
+            </div>
+        </div>
+        <div class="item-actions">
+            <span th:if="${currentUser != null and ((v.usuario != null and v.usuario.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
+                &nbsp;<button type="button" th:attr="data-del-id=${v.idValoracion}" onclick="deleteValoracion(this.dataset.delId)">Eliminar</button>
+            </span>
+        </div>
     </li>
 </ul>
 
@@ -92,7 +115,15 @@
         <span th:text="${currentUser.nombre}"></span>
         <br/>
         <label for="puntuacion">Puntuación (1-10):</label>
-        <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" />
+        <!-- Selector interactivo: 5 estrellas representando 1-10 en pasos de 2 -->
+        <div class="star-input" role="radiogroup" aria-label="Seleccionar puntuación">
+            <button type="button" class="star selectable" data-value="2" aria-checked="false" role="radio" aria-label="2">☆</button>
+            <button type="button" class="star selectable" data-value="4" aria-checked="false" role="radio" aria-label="4">☆</button>
+            <button type="button" class="star selectable" data-value="6" aria-checked="false" role="radio" aria-label="6">☆</button>
+            <button type="button" class="star selectable" data-value="8" aria-checked="false" role="radio" aria-label="8">☆</button>
+            <button type="button" class="star selectable" data-value="10" aria-checked="false" role="radio" aria-label="10">☆</button>
+        </div>
+        <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" style="width:80px;margin-top:8px;" />
         <button type="submit">Enviar</button>
     </form>
 </div>
@@ -116,6 +147,94 @@
      var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
      /*]]>*/
 
+    // Funciones nuevas: estrellas, leer más y upload placeholder
+    function renderAllStars() {
+        document.querySelectorAll('.media-rating').forEach(function(el){
+            var mediaRaw = el.dataset.media;
+            var media = parseFloat(mediaRaw) || 0;
+            var starsCount = Math.round(media / 2); // valor 1-10 -> 0-5 estrellas
+            var starsEl = el.querySelector('.stars');
+            if (!starsEl) return;
+            var html = '';
+            for (var i=0;i<5;i++){
+                html += (i < starsCount) ? '<span class="star filled">★</span>' : '<span class="star">☆</span>';
+            }
+            starsEl.innerHTML = html;
+            el.setAttribute('aria-label', 'Valoración media ' + (Math.round(media*10)/10) );
+        });
+        // estrellas en tablas/listados (index) y otras instancias
+        document.querySelectorAll('[data-media]').forEach(function(el){
+            if (!el.classList.contains('media-rating')){
+                var media = parseFloat(el.dataset.media) || 0;
+                var starsCount = Math.round(media / 2);
+                var container = el.querySelector('.stars-inline');
+                if (!container) return;
+                var html = '';
+                for (var i=0;i<5;i++) html += (i<starsCount) ? '<span class=\'star filled\'>★</span>' : '<span class=\'star\'>☆</span>';
+                container.innerHTML = html;
+            }
+        });
+    }
+
+    function setupReadMore() {
+        var desc = document.querySelector('.descripcion');
+        var toggle = document.querySelector('.read-more-toggle');
+        if (!desc || !toggle) return;
+        var full = desc.textContent || '';
+        var limit = 280;
+        if (full.length <= limit) { toggle.style.display = 'none'; return; }
+        var truncated = full.slice(0, limit).trim() + '...';
+        desc.textContent = truncated;
+        toggle.style.display = 'inline-block';
+        var expanded = false;
+        toggle.addEventListener('click', function(e){ e.preventDefault();
+            if (!expanded) { desc.textContent = full; toggle.textContent = 'Leer menos'; expanded = true; }
+            else { desc.textContent = truncated; toggle.textContent = 'Leer más'; expanded = false; }
+        });
+    }
+
+    function setupUploadPlaceholder() {
+        var btn = document.getElementById('uploadPhotoBtn');
+        var input = document.getElementById('uploadPhotoInput');
+        if (!btn || !input) return;
+        btn.addEventListener('click', function(){
+            input.click();
+        });
+        input.addEventListener('change', function(){
+            if (input.files && input.files.length > 0) {
+                alert('Archivo seleccionado: ' + input.files[0].name + '\n\nNota: subida deshabilitada (placeholder).');
+                input.value = null;
+            }
+        });
+    }
+
+    function setupStarInput() {
+        var stars = document.querySelectorAll('.star-input .star.selectable');
+        var input = document.getElementById('puntuacion');
+        if (!stars || !input) return;
+        function setStars(value) {
+            stars.forEach(function(s){
+                var v = parseInt(s.dataset.value,10) || 0;
+                if (v <= value) { s.classList.add('filled'); s.setAttribute('aria-checked','true'); s.textContent='★'; }
+                else { s.classList.remove('filled'); s.setAttribute('aria-checked','false'); s.textContent='☆'; }
+            });
+        }
+        stars.forEach(function(s){
+            s.addEventListener('click', function(){
+                var v = parseInt(this.dataset.value,10) || 0;
+                input.value = v;
+                setStars(v);
+            });
+            s.addEventListener('keydown', function(e){
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+            });
+        });
+        // Si ya hay un valor (usuario modificando), inicializar visualmente
+        var existing = parseInt(input.value,10) || 0;
+        if (existing > 0) setStars(existing);
+    }
+
+    /*<![CDATA[*/
     // DEBUG: imprimir cookies y token
     console.debug('csrfToken (Thymeleaf):', csrfToken);
     console.debug('document.cookie:', document.cookie);
@@ -354,6 +473,17 @@
              }).catch(e => alert('Error de red al eliminar ruta: ' + e));
         }).catch(err => alert('No se obtuvo token CSRF: ' + err));
     }
+
+    /* Reutilizamos las funciones ya definidas más arriba (startEditComentario, cancelEditComentario, enviarComentario, etc.) */
+
+
+    // Ejecutar inicializadores ligeros al cargar
+    document.addEventListener('DOMContentLoaded', function(){
+        renderAllStars();
+        setupReadMore();
+        setupUploadPlaceholder();
+        setupStarInput();
+    });
 </script>
 </body>
 </html>

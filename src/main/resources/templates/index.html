@@ -37,7 +37,7 @@
 </div>
 
 <div>
-    <table border="1" cellpadding="6" cellspacing="0">
+    <table class="routes-table">
         <thead>
             <tr>
                 <th>Título</th>
@@ -59,7 +59,9 @@
                 <td th:text="${ruta.dificultad != null ? ruta.dificultad.name() : ''}">Dificultad</td>
                 <td th:text="${ruta.distanciaKm != null ? #numbers.formatDecimal(ruta.distanciaKm,1,2) : ''}">0.0</td>
                 <td th:text="${ruta.desnivelM != null ? ruta.desnivelM : ''}">0</td>
-                <td th:text="${medias != null and medias.containsKey(ruta.idRuta) ? #numbers.formatDecimal(medias[ruta.idRuta],1,1) : '0.0'}">0.0</td>
+                <td th:attr="data-media=${medias != null and medias.containsKey(ruta.idRuta) ? medias[ruta.idRuta] : 0}" aria-label="Valoración media de la ruta">
+                    <span class="stars-inline" aria-hidden="true"></span> &nbsp;<span th:text="${medias != null and medias.containsKey(ruta.idRuta) ? #numbers.formatDecimal(medias[ruta.idRuta],1,1) : '0.0'}">0.0</span>
+                </td>
                 <td th:text="${ruta.ubicacion}">Ubicación</td>
             </tr>
         </tbody>
@@ -75,7 +77,7 @@
         var headers = {};
         if (token) headers[headerName] = token;
         fetch('/logout', { method: 'POST', credentials: 'include', headers: headers })
-            .then(r => { window.location = '/'; })
+            .then(() => { window.location = '/'; })
             .catch(e => { alert('Error al hacer logout: ' + e); });
     }
 
@@ -119,6 +121,9 @@
 
     document.getElementById('btnAplicarFiltro').addEventListener('click', function(e) { e.preventDefault(); aplicarFiltro(); });
     document.getElementById('btnLimpiarFiltro').addEventListener('click', function(e) { e.preventDefault(); limpiarFiltro(); });
+
+    // Llamada para renderizar estrellas en el índice (si existe la función global renderAllStars)
+    if (typeof renderAllStars === 'function') { document.addEventListener('DOMContentLoaded', renderAllStars); }
     /*]]>*/
 </script>
 </body>

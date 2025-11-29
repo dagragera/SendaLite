@@ -4,16 +4,17 @@
 <div th:fragment="headExtras">
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta name="description" th:content="${pageDescription != null ? pageDescription : 'SendaLite - descubre y comparte rutas al aire libre'}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo/favicon.svg}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 </div>
 
 <!-- Fragment con navbar + logo (para insertar en <body>) -->
-<nav th:fragment="navbar">
+<nav th:fragment="navbar" aria-label="Barra de navegación principal">
     <div class="nav-inner" style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="nav-left" style="display:flex;align-items:center;gap:8px;">
-            <a th:href="@{/}" class="brand" style="display:inline-flex;align-items:center;gap:8px;">
-                <!-- Imagen del logo temporalmente oculta porque estaba rota; dejamos sólo el texto -->
-                <!-- <img th:src="@{/img/logo/logo.png}" alt="SendaLite" class="brand-logo" /> -->
+            <a th:href="@{/}" class="brand" style="display:inline-flex;align-items:center;gap:8px;" aria-label="Ir al inicio de SendaLite">
+                <img loading="lazy" th:src="@{/img/logo/logo.png}" alt="Logo SendaLite" class="brand-logo" onerror="this.style.display='none'" />
                 <span class="brand-text">SendaLite</span>
             </a>
             <a th:href="@{/}">Rutas</a>
@@ -24,7 +25,7 @@
         <div class="nav-actions" style="margin-left:auto;display:flex;align-items:center;gap:12px;">
             <span th:if="${currentUser == null}">No estás logueado - <a th:href="@{/login}">Login</a> | <a th:href="@{/register}">Registro</a></span>
             <div th:if="${currentUser != null}" style="display:flex;align-items:center;gap:8px;">
-                <span th:text="${currentUser.nombre}">Usuario</span>
+                <span th:text="${currentUser.nombre}" aria-hidden="false">Usuario</span>
                 <a href="#" id="logoutLink" onclick="if(window.logout){logout();}else document.getElementById('logoutForm')?.submit(); return false;">Logout</a>
             </div>
         </div>

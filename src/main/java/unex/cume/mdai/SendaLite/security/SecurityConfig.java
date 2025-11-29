@@ -28,8 +28,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                // recursos estáticos
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                // recursos estáticos (permitir img/ para logo y avatares)
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/img/**", "/webjars/**", "/favicon.ico").permitAll()
                 // páginas públicas y login/register (no incluir /usuarios/** aquí)
                 .requestMatchers("/", "/rutas/**", "/login", "/register").permitAll()
                 // Nota: no permitir acceso público a /api/usuarios; se protege más abajo con role ADMIN

@@ -180,10 +180,106 @@ Helper incluido:
 .\run-maven.ps1
 ```
 
-## Notas finales
+## Notas rápidas sobre cambios UI recientes
 
-- He añadido scripts de inicialización en `docker/mysql/init/` y un `src/main/resources/data.sql` con ejemplos que se pueden usar para desarrollo.
-- Si queréis usar PostgreSQL en lugar de MySQL, puedo añadir un `docker-compose.postgres.yml` y un `application-dev.properties` alternativo.
+He aplicado una serie de mejoras front-end para hacer la ficha de ruta más clara y agradable visualmente. Aquí tienes un resumen de lo que se ha añadido y cómo probarlo localmente:
+
+- Avatares genéricos:
+  - Archivo: `src/main/resources/static/img/avatar-default.svg`
+  - Uso: se muestra un avatar genérico junto a cada comentario y cada valoración.
+
+- Valoración media como estrellas + número:
+  - En la ficha de ruta y en el listado de rutas (index) la valoración se muestra con hasta 5 estrellas (rellenas proporcionalmente) y el número formateado (ej. ★★★★☆ 4.2).
+  - Renderizado: el número se calcula en el servidor (Thymeleaf) y la representación de estrellas se genera en cliente con JavaScript (`renderAllStars()`)
+
+- Subida de foto (placeholder):
+  - En la ficha de ruta aparece un botón `Subir foto (placeholder)` visible sólo para usuarios autenticados.
+  - Comportamiento: abre el selector de archivos del navegador pero no sube nada (sólo muestra un alert). Sirve como placeholder para integrar el backend posteriormente.
+
+- 'Leer más' en la descripción:
+  - Descripciones largas se muestran truncadas (≈280 caracteres) y se pueden expandir contraer con el enlace `Leer más` / `Leer menos`.
+
+- Logo con fallback:
+  - El navbar intenta cargar `src/main/resources/static/img/logo/logo.png`. Si la imagen no existe o está rota, se oculta automáticamente y se muestra el texto `SendaLite` como fallback.
+
+- Archivos modificados (resumen):
+  - `src/main/resources/templates/ruta.html` — avatares, estrellas, upload placeholder, read-more
+  - `src/main/resources/templates/index.html` — estrellas en la lista de rutas
+  - `src/main/resources/templates/fragments/common.html` — restaurado logo con fallback en `onerror`
+  - `src/main/resources/static/css/style.css` — estilos para avatar, estrellas, read-more y upload placeholder
+  - `src/main/resources/static/img/avatar-default.svg` — nuevo recurso SVG (avatar genérico)
+
+Cómo probarlo localmente (Windows PowerShell)
+
+1. Arranca la aplicación (desde la raíz del proyecto):
+
+```powershell
+.\mvnw.cmd -DskipTests spring-boot:run
+```
+
+2. Abrir en el navegador:
+   - Listado de rutas: http://localhost:8080/
+   - Ficha de una ruta: http://localhost:8080/rutas/{id} (sustituye {id} por una ruta existente)
+
+3. Pruebas rápidas:
+   - Comentarios: verifica que aparece el avatar a la izquierda de cada comentario.
+   - Valoración media: comprueba que se ven estrellas y el número (si la ruta tiene valoraciones en la BD).
+   - Subida placeholder: si estás autenticado, pulsa `Subir foto (placeholder)` y selecciona un archivo — aparecerá un mensaje indicando que es un placeholder.
+   - Leer más: en descripciones largas, haz click en `Leer más` para expandir/contraer.
+   - Logo: renombra temporalmente `src/main/resources/static/img/logo/logo.png` (si existe) y recarga la página; la imagen se ocultará y aparecerá el texto `SendaLite`.
+
+CSRF (nota para desarrollo)
+
+- El front-end utiliza meta tags `_csrf` y `_csrf_header` inyectadas por Thymeleaf. Para peticiones AJAX se intenta usar primero el token meta y, si no existe, la cookie `XSRF-TOKEN`.
+- Si ves errores 403 en operaciones AJAX, asegúrate de que el navegador tenga la cookie `XSRF-TOKEN` o que la meta `_csrf` esté presente en el HTML.
+
+Comentarios finales
+
+- Estas mejoras son front-end y no alteran la lógica del servidor ni la persistencia. Si quieres que implemente el backend para almacenar imágenes, podemos planificar los cambios necesarios (endpoint multipart, almacenamiento en disco/objeto y persistencia de rutas.fotos).
+
+## Cambios recientes (interactivos y accesibilidad)
+
+Se han añadido mejoras front-end para mejorar la experiencia de usuario y la accesibilidad. Estas son las principales novedades y cómo probarlas:
+
+- Estrellas interactivas en la ficha de ruta
+  - Descripción: en la ficha de ruta puedes votar usando un selector visual de 5 estrellas (cada estrella representa pasos de 2 en la escala 1-10). Al hacer click en una estrella se rellena la selección y el valor se coloca en el campo `puntuacion` del formulario. El envío sigue usando el endpoint existente `/api/rutas/{id}/valoraciones`.
+  - Cómo probar: abre una ruta (ej: /rutas/1), haz login con un usuario válido, selecciona una estrella y pulsa "Enviar". Deberías ver la valoración persistida si estás con permisos.
+
+- Accesibilidad
+  - Añadidos atributos ARIA (role/aria-label/aria-expanded) y focus styles para facilitar navegación por teclado y lectura con lectores de pantalla.
+  - Mensajes y controles clave (botón de subida placeholder, selector de estrellas, botones de editar/eliminar) tienen labels y comportamiento keyboard-friendly.
+
+- Favicon y responsive logo
+  - Añadido `src/main/resources/static/img/logo/favicon.svg` y el intento de servir versiones optimizadas del logo (`logo-32.png`, `logo-64.png`) para `srcset` (si el navegador las solicita). El navbar carga `logo.png` pero el texto `SendaLite` siempre se muestra como fallback.
+
+- Placeholder de subida de fotos
+  - El botón "Subir foto (placeholder)" abre el selector de archivos del navegador pero no sube nada (muestra un alert). Sirve para probar la UX antes de integrar el backend.
+
+- Otras mejoras
+  - Avatares genéricos junto a comentarios y valoraciones.
+  - Espaciado lateral (padding) aplicado globalmente para que el contenido no quede pegado al borde.
+
+## Cómo ejecutar y probar (rápido)
+
+1. Arranca la aplicación (desde la raíz del proyecto):
+
+```powershell
+.\mvnw.cmd -DskipTests spring-boot:run
+```
+
+2. Abrir en el navegador:
+   - Listado de rutas: http://localhost:8080/
+   - Ficha de una ruta: http://localhost:8080/rutas/{id} (sustituye {id} por una ruta existente)
+
+3. Pruebas específicas:
+   - Estrellas interactivas: loguea un usuario, selecciona una estrella en la ficha y pulsa Enviar.
+   - Subida placeholder: si estás autenticado, pulsa `Subir foto (placeholder)` y selecciona un archivo — aparecerá un mensaje indicando que es un placeholder.
+   - Logo: la imagen se carga desde `/img/logo/logo.png`; si no aparece, el texto `SendaLite` se muestra como fallback. Para forzar fallback, renombra temporalmente `src/main/resources/static/img/logo/logo.png`.
+
+## Notas técnicas y consideraciones
+
+- Todas las mejoras son front-end y no cambian la lógica de persistencia salvo la valoración: se utiliza el mismo endpoint ya implementado.
+- Si quieres que el botón de subida pase a ser funcional, puedo añadir el endpoint multipart, almacenamiento en disco y persistencia en `ruta.fotos` (planificar y aplicar).
 
 ## Entrega2: Acceso a datos
 
