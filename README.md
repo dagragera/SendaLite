@@ -4,7 +4,7 @@
 
   ![](img/logo/logo.png)
 
-**Descripción del logo:**  
+**Descripción del logo:**
 
 El logo representa una **chincheta de ubicación** sobre una **montaña**, simbolizando la idea de marcar rutas y destinos en entornos naturales.
 
@@ -22,92 +22,126 @@ El logo representa una **chincheta de ubicación** sobre una **montaña**, simbo
 
 ## Resumen
 
-Aplicación web minimalista para amantes de la montaña y el senderismo en general.
+Aplicación web minimalista para amantes de la montaña, el senderismo y actividades outdoor en general.
 
 ## Descripción
 
-La idea es que nuestra app, **SendaLite**, sea una aplicación web ligera y minimalista para descubrir y compartir rutas al aire libre, ya sea montaña o senderos.  
+La idea es que nuestra app, **SendaLite**, sea una aplicación web ligera y minimalista para descubrir y compartir rutas al aire libre, ya sea montaña o senderos.
 
-Permitirá a los usuarios:
+Permitirá a los usuarios (según permisos):
 
-- Consultar rutas clasificadas por **dificultad** (fácil, media, difícil).  
-- Ver detalles (distancia, desnivel y mapa).  
-- Valorar con una **puntuación del 1 al 10**.  
-- Los usuarios autenticados podrán **crear, editar y eliminar** sus rutas, así como **puntuar rutas de otros**.  
+- Consultar rutas clasificadas por **dificultad** (fácil, media, difícil).
+- Ver detalles (distancia, desnivel y mapa).
+- Valorar con una **puntuación del 1 al 10**.
+- Crear, editar y eliminar sus rutas.
 
 ## Funcionalidades, Requisitos, “Pliego de condiciones”
 
 ### Ver listado de rutas
 
-- La pantalla principal mostrará todas las rutas disponibles en formato de **tarjetas o lista**.  
-- Cada ruta incluirá información básica para facilitar una preselección rápida.  
+- La pantalla principal muestra todas las rutas disponibles en formato de **tarjetas o lista**.
+- Cada tarjeta incluye información básica para facilitar una preselección rápida (título, dificultad, valoración media, kms).
 
-### Filtrar rutas por dificultad
+### Filtrar rutas por criterios
 
-- Filtrado por **fácil**, **media** y **difícil**.
+- Filtrado por **fácil**, **media** y **difícil**, nombre, actividad y kilómetros.
+
 
 ### Ver ficha de ruta
 
 Pantalla detallada con la información de una ruta específica, similar a una ficha técnica:
 
-- **Título y descripción:** información general.  
-- **Mapa:** ubicación geográfica con posible trazado.  
-- **Datos técnicos:** distancia, desnivel, tiempo estimado.  
-- **Galería de fotos:** imágenes de referencia.  
-- **Información del autor:** quién compartió la ruta.  
-- **Historial:** fechas de creación y actualización.  
-- **Sistema de valoraciones:**  
-  - Solo usuarios registrados pueden votar.  
-  - Escala de **1 a 10** (10 es excelente).  
-  - **Puntuación media** calculada automáticamente.  
-  - **Transparencia:** se muestra cuántas personas han votado.  
+- **Título y descripción**.
+- **Datos técnicos**: distancia, desnivel y tiempo estimado.
+- **Galería de fotos**: Placeholder, no es funcional.
+- **Información del autor**: nombre y avatar.
+- **Historial**: fechas de creación/actualización.
+- **Sistema de valoraciones**:
+  - Solo usuarios registrados pueden votar.
+  - Escala de **1 a 10** (10 es excelente).
+  - **Puntuación media** calculada automáticamente y mostrada con estrellas + valor numérico.
+  - Se muestra el número de valoraciones.
+- **Comentarios**: listados bajo el encabezado "Comentarios".
 
 ### Registro e inicio de sesión (email + contraseña)
 
-- Sistema de autenticación tradicional.  
-- Email y contraseña obligatorios.  
-- Tras loguearse, acceso al resto de funcionalidades.  
+- Sistema de autenticación tradicional (email + contraseña).
+- Tras loguearse, se habilitan acciones de creación/edición propias.
 
 ### Perfil de usuario
 
-Espacio personal donde cada usuario gestiona su identidad y contenido:  
-- **Información pública:** nombre visible y avatar (opcional).  
-- **Estadísticas:** número de rutas creadas y valoraciones realizadas.  
+- Información pública: nombre visible y avatar (opcional/placeholder).
+- Estadísticas: número de rutas creadas y valoraciones realizadas.
 
 ### Crear ruta (usuarios autenticados)
 
 - Formulario con campos obligatorios y opcionales.
-- Confirmación de publicación ************  
+- Validaciones básicas en el servidor y en el cliente.
 
 ### Editar/eliminar rutas propias
 
-- Solo el **autor** o el administrador puede editar o eliminar sus rutas.  
+- Solo el **autor** o el **administrador** puede editar o eliminar una ruta.
 
 ### Búsqueda por texto
 
-Motor de búsqueda con varios criterios:  
-- **Nombre:** palabras clave en el nombre.  
-- Dificultad
-- Actividad
-- Kms
-- 
-- **:** zona geográfica o nombre del lugar.  
-- **:** palabras clave asociadas (montaña,     bosque, etc.).  
-
-## Funcionalidades opcionales, recomendables o futuribles
+- Motor de búsqueda simple por nombre, zona y palabras clave.
 
 
-- Ordenar por puntuación media (desc/asc) y por más recientes.  
-- Formularios con validaciones avanzadas y subida de fotos.  
-- Mapas interactivos.  
-- Búsqueda por ubicación y/o etiquetas.  
-- Ver rutas del propio usuario (**Mi cuenta**).  
-- Gestión básica de errores (404, 500) y mensajes de validación.  
-- Marcar ruta como favorita.  
-- Comentarios en rutas.
 
 ## Diagrama Entidad - Relación
+
 ![](img/entidad_relacion_sendalite.jpeg)
+
+## Casos de uso (resumen)
+
+A continuación se muestran casos de uso principales, pensados para documentar el comportamiento esperado.
+
+- Uso: Registrar usuario
+  - Actor: Usuario no registrado
+  - Precondición: Ninguna
+  - Flujo principal: Usuario rellena formulario de registro -> sistema valida datos -> se crea la cuenta -> usuario puede iniciar sesión.
+  - Excepciones: Email ya registrado -> mostrar error.
+
+- Uso: Iniciar sesión
+  - Actor: Usuario registrado
+  - Flujo: Usuario envía email+contraseña -> sistema autentica -> crea sesión.
+  - Excepciones: Credenciales inválidas -> mensaje de error.
+
+- Uso: Crear ruta
+  - Actor: Usuario autenticado
+  - Flujo: Usuario rellena formulario de ruta (título, descripción, kms, desnivel, dificultad, coordenadas opcionales) -> sistema valida y persiste -> se muestra la ficha.
+  - Excepciones: Campos obligatorios vacíos -> validación.
+
+- Uso: Ver ficha de ruta
+  - Actor: Cualquier usuario
+  - Flujo: Usuario abre /rutas/{id} -> sistema muestra detalle, comentarios y valoraciones.
+
+- Uso: Valorar ruta
+  - Actor: Usuario autenticado
+  - Flujo: Selecciona puntuación (1-10) en la ficha -> sistema persiste valoración -> recalcula media.
+  - Excepciones: Usuario intenta votar varias veces (según política) -> se actualiza o se bloquea según implementación.
+
+- Uso: Comentar ruta
+  - Actor: Usuario autenticado
+  - Flujo: Envía comentario en la ficha -> se persiste y se muestra bajo "Comentarios".
+
+- Uso: Administrar usuarios/rutas
+  - Actor: Administrador
+  - Flujo: Accede a `/admin` -> lista usuarios y rutas -> edita o borra según necesidad.
+
+## Conexión a la base de datos y datos de ejemplo
+
+- Configuración principal: `src/main/resources/application.properties` contiene la configuración por defecto para la conexión JDBC.
+- Por defecto el proyecto está pensado para usarse con MySQL local (o en Docker). En `docker/docker-compose.yml` y en `docker/mysql/init/` hay scripts para levantar MySQL y crear los esquemas/datos iniciales (`01_schema.sql`, `02_seed.sql`).
+
+Propiedades típicas que están en `application.properties`:
+
+- `spring.datasource.url=jdbc:mysql://localhost:3306/sendalite`
+- `spring.datasource.username=sendalite`
+- `spring.datasource.password=sendalite`
+- `spring.jpa.hibernate.ddl-auto=update` 
+
+Para pruebas unitarias y de integración se usa H2 en local en vez de SQL en Docker (configuración en `src/test/resources/application.properties`).
 
 ## Arrancar la base de datos con Docker (MySQL)
 
@@ -117,60 +151,54 @@ Pasos rápidos:
 
 1. Arrancar los servicios:
 
-   docker compose up -d
+```powershell
+docker compose up -d
+```
 
-   (o `docker-compose up -d` si tu versión de Docker lo requiere).
+(o `docker-compose up -d` según versión de Docker)
 
 2. Variables por defecto (fijadas en `docker-compose.yml`):
 
-   - MYSQL_DATABASE=sendalite
-   - MYSQL_USER=sendalite
-   - MYSQL_PASSWORD=sendalite
-   - MYSQL_ROOT_PASSWORD=root
+- MYSQL_DATABASE=sendalite
+- MYSQL_USER=sendalite
+- MYSQL_PASSWORD=sendalite
+- MYSQL_ROOT_PASSWORD=root
 
-3. El directorio `docker/mysql/init/` contiene los scripts `01_schema.sql` y `02_seed.sql` que se ejecutarán en el primer arranque y crearán la estructura y datos iniciales. También hay un archivo my.cnf para configurar la base de datos (acentos, ñ).
+3. El directorio `docker/mysql/init/` contiene los scripts `01_schema.sql` y `02_seed.sql` que se ejecutarán en el primer arranque y crearán la estructura y datos iniciales.
 
 4. Para acceder a la base de datos desde Adminer: abre http://localhost:8081 y conéctate a `sendalite` usando las credenciales anteriores.
 
-Nota: la aplicación por defecto (archivo `src/main/resources/application.properties`) está configurada para MySQL en `jdbc:mysql://localhost:3306/sendalite`.
-
 ## Ejecutar tests
 
-- Los tests unitarios/DB usan H2 embebida (`@DataJpaTest`) por lo que no es necesario tener Docker corriendo para ejecutar `mvn test`.
+- Como hemos mencionado antes, los tests unitarios/DB usan H2 embebida (`@DataJpaTest`) por lo que no es necesario tener Docker corriendo para ejecutar `mvn test`.
 
 - Ejecutar la suite desde la raíz del proyecto con el wrapper de Maven:
 
-```sh
-./mvnw test
+```powershell
+.\mvnw.cmd test
 ```
-
-o con Maven instalado:
-
-```sh
-mvn test
-```
-
-- Si quieres ejecutar la aplicación contra la base de datos MySQL arrancada con Docker, arranca los contenedores y luego lanza la aplicación (por ejemplo desde tu IDE) usando las credenciales del `application.properties`.
 
 ## Ejecutar la aplicación Spring Boot (Maven)
 
 Problema común: PowerShell puede responder "'.\mvnw.cmd' no se reconoce..." al ejecutar:
+
+```powershell
 .\mvnw.cmd spring-boot:run
+```
 
 Soluciones rápidas:
 1. Asegúrate de estar en la carpeta raíz del proyecto (la que contiene `pom.xml`).
-2. Si el wrapper existe (mvnw.cmd, mvnw, .mvn/wrapper), ejecuta desde la raíz del proyecto:
+2. Ejecuta con el wrapper:
 
-   ```powershell
-   .\mvnw.cmd spring-boot:run -DskipTests
-   ```
+```powershell
+.\mvnw.cmd spring-boot:run -DskipTests
+```
 
-3. Si no existe el wrapper pero tienes Maven instalado:
-   ```powershell
-   mvn spring-boot:run -DskipTests
-   ```
+3. Si no tienes wrapper pero tienes Maven instalado:
 
-4. Si no tienes mvn ni wrapper, instala Maven: https://maven.apache.org/install.html
+```powershell
+mvn spring-boot:run -DskipTests
+```
 
 Helper incluido:
 - `run-maven.ps1`: detecta `mvnw.cmd` o `mvn` y ejecuta `spring-boot:run` automáticamente.
@@ -180,168 +208,120 @@ Helper incluido:
 .\run-maven.ps1
 ```
 
-## Notas rápidas sobre cambios UI recientes
+## Notas rápidas sobre cambios en la "UI"
 
-He aplicado una serie de mejoras front-end para hacer la ficha de ruta más clara y agradable visualmente. Aquí tienes un resumen de lo que se ha añadido y cómo probarlo localmente:
+Se han aplicado diversas mejoras front-end para hacer la ficha de ruta más clara y agradable visualmente. Resumen de lo incluído:
 
-- Avatares genéricos:
-  - Archivo: `src/main/resources/static/img/avatar-default.svg`
-  - Uso: se muestra un avatar genérico junto a cada comentario y cada valoración.
+- Avatares genéricos: `src/main/resources/static/img/avatar-default.svg`.
+- Valoración media mostrada con estrellas + número.
+- Botón de subida de foto (placeholder) visible sólo a usuarios autenticados; actualmente no sube archivos al servidor.
+- 'Leer más' en descripciones largas.
+- Logo con fallback: el navbar intenta cargar `static/img/logo/logo.png` y usa texto `SendaLite` si no se encuentra.
+- Padding lateral global para evitar que el contenido esté pegado al borde.
+- Comentarios y valoraciones mostradas bajo sus respectivos encabezados en la ficha.
 
-- Valoración media como estrellas + número:
-  - En la ficha de ruta y en el listado de rutas (index) la valoración se muestra con hasta 5 estrellas (rellenas proporcionalmente) y el número formateado (ej. ★★★★☆ 4.2).
-  - Renderizado: el número se calcula en el servidor (Thymeleaf) y la representación de estrellas se genera en cliente con JavaScript (`renderAllStars()`)
+Estos cambios son mayormente front-end y no alteran la lógica de persistencia salvo en el caso de valoraciones, que utilizan los endpoints existentes.
 
-- Subida de foto (placeholder):
-  - En la ficha de ruta aparece un botón `Subir foto (placeholder)` visible sólo para usuarios autenticados.
-  - Comportamiento: abre el selector de archivos del navegador pero no sube nada (sólo muestra un alert). Sirve como placeholder para integrar el backend posteriormente.
+## Estado de implementación 
 
-- 'Leer más' en la descripción:
-  - Descripciones largas se muestran truncadas (≈280 caracteres) y se pueden expandir contraer con el enlace `Leer más` / `Leer menos`.
+- Implementado:
+  - Listado de rutas, fichas, búsqueda y filtrado por dificultad.
+  - Registro/login, creación y edición básica de rutas por su autor.
+  - Valoraciones y cálculo de media.
+  - Panel de administración con recuento de usuarios y rutas y enlaces para editar.
+  - Mejora visual: avatares por defecto, padding lateral, orden de comentarios/valoraciones.
 
-- Logo con fallback:
-  - El navbar intenta cargar `src/main/resources/static/img/logo/logo.png`. Si la imagen no existe o está rota, se oculta automáticamente y se muestra el texto `SendaLite` como fallback.
+- No implementado / parcial:
+  - Subida real y persistente de fotos (actualmente placeholders en cliente).
+  
+  - Integración avanzada de mapas (trazado interactivo).
 
-- Archivos modificados (resumen):
-  - `src/main/resources/templates/ruta.html` — avatares, estrellas, upload placeholder, read-more
-  - `src/main/resources/templates/index.html` — estrellas en la lista de rutas
-  - `src/main/resources/templates/fragments/common.html` — restaurado logo con fallback en `onerror`
-  - `src/main/resources/static/css/style.css` — estilos para avatar, estrellas, read-more y upload placeholder
-  - `src/main/resources/static/img/avatar-default.svg` — nuevo recurso SVG (avatar genérico)
 
-Cómo probarlo localmente (Windows PowerShell)
+## Pruebas y verificaciones 
 
-1. Arranca la aplicación (desde la raíz del proyecto):
+- Logo: debe aparecer en el navbar tanto si estás autenticado como si no. Si no ves la imagen, comprueba `img/logo/logo.png` y que la carpeta `img/` se incluya al subir el proyecto.
+- Panel admin: en `/admin` verás el recuento de usuarios y rutas y enlaces para editar.
+- Ficha de ruta: comentarios y valoraciones aparecen bajo sus respectivos encabezados.
+- Subida de foto (placeholder): estando autenticado, pulsa el botón y selecciona un fichero — aparecerá el selector pero no se subirá al servidor.
 
-```powershell
-.\mvnw.cmd -DskipTests spring-boot:run
-```
+## Archivos y cambios front-end relevantes
 
-2. Abrir en el navegador:
-   - Listado de rutas: http://localhost:8080/
-   - Ficha de una ruta: http://localhost:8080/rutas/{id} (sustituye {id} por una ruta existente)
+- `src/main/resources/templates/fragments/common.html` — manejo del logo con fallback a texto.
+- `src/main/resources/templates/index.html` — lista de rutas y estrellas de valoración.
+- `src/main/resources/templates/ruta.html` — ficha de ruta: layout, placeholders, comentarios/valoraciones.
+- `src/main/resources/static/css/style.css` — ajustes de padding, estilos para avatar y estrellas.
+- `src/main/resources/static/img/avatar-default.svg` — avatar por defecto.
 
-3. Pruebas rápidas:
-   - Comentarios: verifica que aparece el avatar a la izquierda de cada comentario.
-   - Valoración media: comprueba que se ven estrellas y el número (si la ruta tiene valoraciones en la BD).
-   - Subida placeholder: si estás autenticado, pulsa `Subir foto (placeholder)` y selecciona un archivo — aparecerá un mensaje indicando que es un placeholder.
-   - Leer más: en descripciones largas, haz click en `Leer más` para expandir/contraer.
-   - Logo: renombra temporalmente `src/main/resources/static/img/logo/logo.png` (si existe) y recarga la página; la imagen se ocultará y aparecerá el texto `SendaLite`.
 
-CSRF (nota para desarrollo)
+## Cómo contribuir al proyecto (mejoras que nos faltan por implementar)
+- Implementar subida real de imágenes (endpoint multipart + almacenamiento + persistencia de ruta en la entidad) y documentarlo con la propiedad `app.upload.dir`.
+- Añadir validaciones de tamaño/tipo y generación de thumbnails.
+- Mejorar responsive y accesibilidad de la ficha de ruta.
 
-- El front-end utiliza meta tags `_csrf` y `_csrf_header` inyectadas por Thymeleaf. Para peticiones AJAX se intenta usar primero el token meta y, si no existe, la cookie `XSRF-TOKEN`.
-- Si ves errores 403 en operaciones AJAX, asegúrate de que el navegador tenga la cookie `XSRF-TOKEN` o que la meta `_csrf` esté presente en el HTML.
+## Endpoints disponibles (vistas y API)
 
-Comentarios finales
+A continuación se listan las rutas HTTP principales que están implementadas en el proyecto (según los controladores actuales). Incluye endpoints que sirven plantillas Thymeleaf (vistas) y endpoints REST (`/api/**`).
 
-- Estas mejoras son front-end y no alteran la lógica del servidor ni la persistencia. Si quieres que implemente el backend para almacenar imágenes, podemos planificar los cambios necesarios (endpoint multipart, almacenamiento en disco/objeto y persistencia de rutas.fotos).
+Rutas de vistas (Thymeleaf):
 
-## Cambios recientes (interactivos y accesibilidad)
+- GET /                — listado de rutas (index)
+- GET /rutas/{id}      — ficha de una ruta (detalle)
+- GET /login           — formulario de login
+- GET /register        — formulario de registro
+- GET /admin           — panel de administración (resumen)
+- GET /admin/usuarios  — listado de usuarios (vista admin)
+- GET /admin/usuarios/{id}/editar — formulario edición usuario (admin)
+- GET /admin/rutas     — listado de rutas (vista admin)
+- GET /admin/rutas/{id}/editar — formulario edición ruta (admin)
+- GET /ruta_form       — formulario de ruta (crear/editar) — usado por admin y usuarios cuando corresponda
 
-Se han añadido mejoras front-end para mejorar la experiencia de usuario y la accesibilidad. Estas son las principales novedades y cómo probarlas:
+API REST principales (JSON):
 
-- Estrellas interactivas en la ficha de ruta
-  - Descripción: en la ficha de ruta puedes votar usando un selector visual de 5 estrellas (cada estrella representa pasos de 2 en la escala 1-10). Al hacer click en una estrella se rellena la selección y el valor se coloca en el campo `puntuacion` del formulario. El envío sigue usando el endpoint existente `/api/rutas/{id}/valoraciones`.
-  - Cómo probar: abre una ruta (ej: /rutas/1), haz login con un usuario válido, selecciona una estrella y pulsa "Enviar". Deberías ver la valoración persistida si estás con permisos.
+- POST /api/rutas                 — crear ruta (autenticado)
+- GET  /api/rutas                 — listar rutas (soporta ?q=busqueda)
+- GET  /api/rutas/{id}            — obtener detalles de ruta (incluye autor, comentarios, valoraciones)
+- PUT  /api/rutas/{id}            — actualizar ruta (autor o admin)
+- DELETE /api/rutas/{id}          — borrar ruta (autor o admin)
 
-- Accesibilidad
-  - Añadidos atributos ARIA (role/aria-label/aria-expanded) y focus styles para facilitar navegación por teclado y lectura con lectores de pantalla.
-  - Mensajes y controles clave (botón de subida placeholder, selector de estrellas, botones de editar/eliminar) tienen labels y comportamiento keyboard-friendly.
+- POST /api/usuarios              — crear usuario (registro via API)
+- GET  /api/usuarios              — listar usuarios
+- GET  /api/usuarios/{id}         — obtener usuario
+- PUT  /api/usuarios/{id}         — actualizar usuario
+- DELETE /api/usuarios/{id}       — eliminar usuario (su propio usuario o admin)
 
-- Favicon y responsive logo
-  - Añadido `src/main/resources/static/img/logo/favicon.svg` y el intento de servir versiones optimizadas del logo (`logo-32.png`, `logo-64.png`) para `srcset` (si el navegador las solicita). El navbar carga `logo.png` pero el texto `SendaLite` siempre se muestra como fallback.
+- POST   /api/rutas/{rutaId}/comentarios    — crear comentario (autenticado)
+- GET    /api/rutas/{rutaId}/comentarios    — listar comentarios de una ruta
+- PUT    /api/rutas/{rutaId}/comentarios/{comentarioId} — actualizar comentario (autor o admin)
+- DELETE /api/rutas/{rutaId}/comentarios/{comentarioId} — eliminar comentario (autor o admin)
 
-- Placeholder de subida de fotos
-  - El botón "Subir foto (placeholder)" abre el selector de archivos del navegador pero no sube nada (muestra un alert). Sirve para probar la UX antes de integrar el backend.
+- POST   /api/rutas/{rutaId}/valoraciones   — crear/actualizar valoración (autenticado)
+- GET    /api/rutas/{rutaId}/valoraciones   — listar valoraciones
+- GET    /api/rutas/{rutaId}/valoraciones/avg — obtener media de valoraciones
+- DELETE /api/rutas/{rutaId}/valoraciones/{valoracionId} — eliminar valoración (autor o admin)
 
-- Otras mejoras
-  - Avatares genéricos junto a comentarios y valoraciones.
-  - Espaciado lateral (padding) aplicado globalmente para que el contenido no quede pegado al borde.
+Ejemplos rápidos (PowerShell / curl):
 
-## Cómo ejecutar y probar (rápido)
-
-1. Arranca la aplicación (desde la raíz del proyecto):
-
-```powershell
-.\mvnw.cmd -DskipTests spring-boot:run
-```
-
-2. Abrir en el navegador:
-   - Listado de rutas: http://localhost:8080/
-   - Ficha de una ruta: http://localhost:8080/rutas/{id} (sustituye {id} por una ruta existente)
-
-3. Pruebas específicas:
-   - Estrellas interactivas: loguea un usuario, selecciona una estrella en la ficha y pulsa Enviar.
-   - Subida placeholder: si estás autenticado, pulsa `Subir foto (placeholder)` y selecciona un archivo — aparecerá un mensaje indicando que es un placeholder.
-   - Logo: la imagen se carga desde `/img/logo/logo.png`; si no aparece, el texto `SendaLite` se muestra como fallback. Para forzar fallback, renombra temporalmente `src/main/resources/static/img/logo/logo.png`.
-
-## Notas técnicas y consideraciones
-
-- Todas las mejoras son front-end y no cambian la lógica de persistencia salvo la valoración: se utiliza el mismo endpoint ya implementado.
-- Si quieres que el botón de subida pase a ser funcional, puedo añadir el endpoint multipart, almacenamiento en disco y persistencia en `ruta.fotos` (planificar y aplicar).
-
-## Entrega2: Acceso a datos
-
-**Referencia de entrega:** Tag: `entrega2` — Commit: `f00676a` — Fecha: `2025-11-04T19:40:30+01:00`
-
-Para la entrega de la práctica, se ha preparado un conjunto de datos de ejemplo y scripts de inicialización que permiten levantar la base de datos y cargar datos de prueba fácilmente.
-
-### Archivos incluidos
-
-- `docker/mysql/init/01_schema.sql`: script para crear la estructura de tablas.  
-- `docker/mysql/init/02_seed.sql`: script para cargar datos de prueba.  
-- `src/main/resources/data.sql`: datos de ejemplo adicionales.  
-
-### Instrucciones
-
-1. Asegúrate de tener Docker corriendo con la base de datos MySQL levantada. Consulta la sección anterior si tienes dudas.  
-2. Los scripts en `docker/mysql/init/` se ejecutan automáticamente en el primer arranque. Si ya has arrancado la base de datos antes, puedes reiniciarla para que se apliquen los cambios:  
-
-   ```sh
-   docker compose down
-   docker compose up -d
-   ```
-
-3. Accede a Adminer y verifica que las tablas y datos se han creado correctamente. Usa las credenciales habituales para conectar.  
-4. Los datos de ejemplo incluyen rutas, usuarios y valoraciones. Puedes usarlos para explorar la aplicación y realizar pruebas.
-
-### Artifacts y release
-
-- ZIP de la entrega: `entrega2.zip` (generado desde HEAD, en la raíz del proyecto).
-- Tag publicado en GitHub: `entrega2` (referencia: https://github.com/dagragera/SendaLite/releases/tag/entrega2 ).
-
-Notas rápidas para el profesor/ayudante:
-- Para inspeccionar el ZIP: descomprimir `entrega2.zip` y abrir el proyecto con IntelliJ o usar los comandos de Maven indicados en este README.
-
-Cómo ejecutar desde IntelliJ (Windows):
-1. File → Open... → seleccionar la carpeta raíz del proyecto (por ejemplo la carpeta que contiene `pom.xml`) y abrir como proyecto Maven.
-2. Esperar a que el IDE importe el proyecto y descargue dependencias.
-3. Para ejecutar los tests: Run → Run 'All Tests' o abrir la clase de test y hacer Run.
-4. Para ejecutar la aplicación: abrir la clase `src/main/java/unex/cume/mdai/SendaLite/SendaLiteApplication.java` y pulsar el botón Run (o Run 'SendaLiteApplication').
-
-Cómo ejecutar desde línea de comandos (Windows PowerShell / cmd.exe):
-
-- Ejecutar tests (sin Docker, usa H2 embebida):
+- Listar rutas (GET JSON):
 
 ```powershell
-# PowerShell (desde la raíz del proyecto)
-.\mvnw.cmd test
+curl.exe -H "Accept: application/json" http://localhost:8080/api/rutas
 ```
 
-```cmd
-REM cmd.exe
-mvnw.cmd test
-```
-
-- Ejecutar la aplicación contra MySQL levantado con Docker:
+- Obtener detalles de una ruta (GET JSON):
 
 ```powershell
-# PowerShell (desde la raíz del proyecto)
-.\mvnw.cmd spring-boot:run
+curl.exe -H "Accept: application/json" http://localhost:8080/api/rutas/1
 ```
 
-```cmd
-REM cmd.exe
-mvnw.cmd spring-boot:run
+- Crear valoración (POST JSON) — requiere autenticación (cookie o token):
+
+```powershell
+curl.exe -X POST -H "Content-Type: application/json" -d '{"puntuacion":8}' http://localhost:8080/api/rutas/1/valoraciones
 ```
+
+Nota: La autenticación para los endpoints que lo requieren se maneja con el sistema de sesiones de Spring Security; desde curl es más fácil probar con herramientas como Postman o simulando el login y enviando la cookie de sesión.
+
+---
+
+
+
