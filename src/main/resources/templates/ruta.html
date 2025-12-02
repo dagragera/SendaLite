@@ -39,15 +39,14 @@
                 <div class="field"><strong>Etiquetas:</strong> <span th:text="${ruta.etiquetas != null ? ruta.etiquetas : 'Ninguna'}">Ninguna</span></div>
             </div>
             <div class="row">
-                <div class="field"><strong>Activa:</strong> <span th:text="${ruta.activa} ? 'Sí' : 'No'">Sí/No</span></div>
-                <div class="field"><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></div>
-                <div class="field"><strong>Valoración media:</strong>
-                    <span class="media-rating" th:attr="data-media=${media}">
-                        <span class="stars" aria-hidden="true"></span>
-                        &nbsp;<span class="media-number" th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span>
-                    </span>
-                </div>
-            </div>
+                 <div class="field"><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></div>
+                 <div class="field"><strong>Valoración media:</strong>
+                     <span class="media-rating" th:attr="data-media=${media}">
+                         <span class="stars" aria-hidden="true"></span>
+                         &nbsp;<span class="media-number" th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span>
+                     </span>
+                 </div>
+             </div>
         </div>
     </div>
 </div> <!-- fin de #rutaContainer -->

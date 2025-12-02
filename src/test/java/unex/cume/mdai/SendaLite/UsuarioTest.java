@@ -54,6 +54,8 @@ public class UsuarioTest {
 		user.setNombre("Autor Prueba");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
+		// Asegurar explícitamente el flag admin en los tests (no admin por defecto)
+		user.setAdmin(false);
 		usuarioService.anadirUsuario(user);
 
 		// Crear ruta y asignar autor
@@ -99,6 +101,8 @@ public class UsuarioTest {
 		user.setNombre("Autor Prueba 2");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
+		// Usuario de prueba no administrador
+		user.setAdmin(false);
 		usuarioService.anadirUsuario(user);
 
 		// Crear ruta con comentario y persistir
@@ -146,6 +150,8 @@ public class UsuarioTest {
 		u.setNombre("Basic User");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
+		// marcar como usuario normal
+		u.setAdmin(false);
 		usuarioService.anadirUsuario(u);
 		usuarioRepository.flush();
 
@@ -162,6 +168,8 @@ public class UsuarioTest {
 		u.setNombre("Del User");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
+		// usuario regular
+		u.setAdmin(false);
 		usuarioService.anadirUsuario(u);
 		usuarioRepository.flush();
 
@@ -182,6 +190,8 @@ public class UsuarioTest {
 		u.setNombre("Original Name");
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
+		// no admin en este caso
+		u.setAdmin(false);
 		usuarioService.anadirUsuario(u);
 		usuarioRepository.flush();
 
