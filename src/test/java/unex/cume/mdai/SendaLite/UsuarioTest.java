@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
@@ -21,6 +20,9 @@ import unex.cume.mdai.SendaLite.model.Dificultad;
 import unex.cume.mdai.SendaLite.model.TipoActividad;
 import unex.cume.mdai.SendaLite.service.UsuarioService;
 import unex.cume.mdai.SendaLite.service.RutaService;
+import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
+import unex.cume.mdai.SendaLite.repository.RutaRepository;
+import unex.cume.mdai.SendaLite.repository.ComentarioRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
@@ -28,13 +30,19 @@ import unex.cume.mdai.SendaLite.service.RutaService;
 public class UsuarioTest {
 
 	@Autowired
-	private TestEntityManager entityManager;
-
-	@Autowired
 	private UsuarioService usuarioService;
 
 	@Autowired
 	private RutaService rutaService;
+
+	@Autowired
+	private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private RutaRepository rutaRepository;
+
+	@Autowired
+	private ComentarioRepository comentarioRepository;
 
 	@Test
 	void testPersistenciaEnCascadaDeRutaAComentario() {
@@ -69,17 +77,17 @@ public class UsuarioTest {
 		ruta.getComentarios().add(c);
 
 		// Persistir la ruta; los comentarios deben persistirse por cascade
-		rutaService.anadirRuta(ruta);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		ruta = rutaService.anadirRuta(ruta);
+ 		rutaRepository.flush();
 
 		// Comprobar que el comentario se guardó
-		java.util.List<Comentario> comentariosPersist = entityManager.getEntityManager()
-                .createQuery("SELECT c FROM Comentario c WHERE c.ruta.titulo = :t", Comentario.class)
-                .setParameter("t", "Ruta de prueba")
-                .getResultList();
-        assertThat(comentariosPersist).hasSize(1);
-        assertThat(comentariosPersist.get(0).getTexto()).isEqualTo("Buen camino");
+		// Buscar la ruta por título y luego usar comentarioRepository para obtener comentarios por idRuta
+		java.util.List<Ruta> rutas = rutaRepository.findByTituloContainingIgnoreCase("Ruta de prueba");
+		assertThat(rutas).isNotEmpty();
+		Long idRuta = rutas.get(0).getIdRuta();
+		java.util.List<Comentario> comentariosPersist = comentarioRepository.findByRutaIdRuta(idRuta);
+		assertThat(comentariosPersist).hasSize(1);
+		assertThat(comentariosPersist.get(0).getTexto()).isEqualTo("Buen camino");
 	}
 
 	@Test
@@ -112,27 +120,21 @@ public class UsuarioTest {
 		c1.setRuta(ruta);
 		ruta.getComentarios().add(c1);
 
-		rutaService.anadirRuta(ruta);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		ruta = rutaService.anadirRuta(ruta);
+ 		rutaRepository.flush();
 
 		// Recuperar ruta, eliminarla y comprobar que los comentarios también se eliminan
-		Ruta persistedRuta = entityManager.getEntityManager()
-				.createQuery("SELECT r FROM Ruta r WHERE r.titulo = :t", Ruta.class)
-				.setParameter("t", "Ruta a eliminar")
-				.getSingleResult();
+		java.util.List<Ruta> persistedList = rutaRepository.findByTituloContainingIgnoreCase("Ruta a eliminar");
+		assertThat(persistedList).isNotEmpty();
+		Ruta persistedRuta = persistedList.get(0);
 		Long rutaId = persistedRuta.getIdRuta();
 
 		// eliminar
-		rutaService.eliminarRuta(persistedRuta);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		rutaService.eliminarRutaPorId(rutaId);
+		rutaRepository.flush();
 
 		// No debe quedar ningún comentario para esa ruta
-		java.util.List<Comentario> comentariosAfter = entityManager.getEntityManager()
-				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.idRuta = :rid", Comentario.class)
-				.setParameter("rid", rutaId)
-				.getResultList();
+		java.util.List<Comentario> comentariosAfter = comentarioRepository.findByRutaIdRuta(rutaId);
 		assertThat(comentariosAfter).isEmpty();
 	}
 
@@ -145,15 +147,11 @@ public class UsuarioTest {
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
 		usuarioService.anadirUsuario(u);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		usuarioRepository.flush();
 
-		java.util.List<Usuario> found = entityManager.getEntityManager()
-				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
-				.setParameter("e", "basicuser@example.com")
-				.getResultList();
-		assertThat(found).hasSize(1);
-		assertThat(found.get(0).getNombre()).isEqualTo("Basic User");
+		java.util.Optional<Usuario> found = usuarioRepository.findByEmail("basicuser@example.com");
+		assertThat(found).isPresent();
+		assertThat(found.get().getNombre()).isEqualTo("Basic User");
 	}
 
 	@Test
@@ -165,21 +163,14 @@ public class UsuarioTest {
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
 		usuarioService.anadirUsuario(u);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		usuarioRepository.flush();
 
-		Usuario persisted = entityManager.getEntityManager()
-				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
-				.setParameter("e", "deluser@example.com")
-				.getSingleResult();
-		usuarioService.eliminarUsuario(persisted);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		java.util.Optional<Usuario> persisted = usuarioRepository.findByEmail("deluser@example.com");
+		assertThat(persisted).isPresent();
+		usuarioService.eliminarUsuario(persisted.get());
+		usuarioRepository.flush();
 
-		java.util.List<Usuario> after = entityManager.getEntityManager()
-				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
-				.setParameter("e", "deluser@example.com")
-				.getResultList();
+		java.util.Optional<Usuario> after = usuarioRepository.findByEmail("deluser@example.com");
 		assertThat(after).isEmpty();
 	}
 
@@ -192,18 +183,15 @@ public class UsuarioTest {
 		u.setFechaRegistro(LocalDate.now());
 		u.setActivo(true);
 		usuarioService.anadirUsuario(u);
-		entityManager.getEntityManager().flush();
+		usuarioRepository.flush();
 
 		// modificar mediante servicio
 		u.setNombre("Nombre Modificado");
 		usuarioService.modificarUsuario(u);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		usuarioRepository.flush();
 
-		Usuario found = entityManager.getEntityManager()
-				.createQuery("SELECT u FROM Usuario u WHERE u.email = :e", Usuario.class)
-				.setParameter("e", "moduser@example.com")
-				.getSingleResult();
-		assertThat(found.getNombre()).isEqualTo("Nombre Modificado");
+		java.util.Optional<Usuario> found = usuarioRepository.findByEmail("moduser@example.com");
+		assertThat(found).isPresent();
+		assertThat(found.get().getNombre()).isEqualTo("Nombre Modificado");
 	}
 }

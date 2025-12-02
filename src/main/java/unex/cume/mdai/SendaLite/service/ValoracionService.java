@@ -31,11 +31,35 @@ public class ValoracionService {
     public Valoracion anadirValoracion(Valoracion valoracion) {
         if (valoracion == null) throw new IllegalArgumentException("Valoracion nula");
         if (valoracion.getUsuario() == null || valoracion.getRuta() == null) throw new IllegalArgumentException("Usuario y ruta requeridos");
+
+        // Asegurar que las referencias a Ruta y Usuario están resueltas (entidades gestionadas)
+        Long usuarioId = valoracion.getUsuario().getIdUsuario();
+        Long rutaId = valoracion.getRuta().getIdRuta();
+        if (usuarioId == null || rutaId == null) {
+            throw new IllegalArgumentException("Usuario.id y Ruta.id requeridos");
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + usuarioId));
+        Ruta ruta = rutaRepository.findById(rutaId)
+                .orElseThrow(() -> new IllegalArgumentException("Ruta no encontrada: " + rutaId));
+
+        // Reemplazar las referencias para evitar problemas con instancias transient/detached
+        valoracion.setUsuario(usuario);
+        valoracion.setRuta(ruta);
+
         Optional<Valoracion> exists = valoracionRepository.findByUsuarioIdUsuarioAndRutaIdRuta(
-                valoracion.getUsuario().getIdUsuario(), valoracion.getRuta().getIdRuta());
+                usuarioId, rutaId);
         if (exists.isPresent()) throw new IllegalArgumentException("Ya existe una valoración de este usuario para la ruta");
         if (valoracion.getFechaValoracion() == null) valoracion.setFechaValoracion(LocalDate.now());
-        return valoracionRepository.save(valoracion);
+        Valoracion saved = valoracionRepository.save(valoracion);
+
+        // Mantener la relación bidireccional: añadir la valoración al conjunto de la ruta gestionada
+        if (ruta.getValoraciones() != null) {
+            ruta.getValoraciones().add(saved);
+        }
+
+        return saved;
     }
 
     @Transactional
@@ -47,7 +71,21 @@ public class ValoracionService {
 
     @Transactional
     public void eliminarValoracion(Valoracion valoracion) {
-        valoracionRepository.delete(valoracion);
+        if (valoracion == null) return;
+        Long id = valoracion.getIdValoracion();
+        if (id == null) {
+            // intentar eliminar por la instancia directamente
+            valoracionRepository.delete(valoracion);
+            return;
+        }
+        Optional<Valoracion> managed = valoracionRepository.findById(id);
+        managed.ifPresent(v -> {
+            Ruta r = v.getRuta();
+            if (r != null && r.getValoraciones() != null) {
+                r.getValoraciones().remove(v);
+            }
+            valoracionRepository.delete(v);
+        });
     }
 
     @Transactional
@@ -72,14 +110,17 @@ public class ValoracionService {
             v = existing.get();
             v.setPuntuacion(puntuacion);
             v.setFechaValoracion(LocalDate.now());
+            v = valoracionRepository.save(v);
         } else {
             v = new Valoracion();
             v.setRuta(ruta);
             v.setUsuario(usuario);
             v.setPuntuacion(puntuacion);
             v.setFechaValoracion(LocalDate.now());
+            v = valoracionRepository.save(v);
+            if (ruta.getValoraciones() != null) ruta.getValoraciones().add(v);
         }
-        return valoracionRepository.save(v);
+        return v;
     }
 
     @Transactional
@@ -98,6 +139,13 @@ public class ValoracionService {
 
     @Transactional
     public void delete(Long id) {
-        valoracionRepository.findById(id).ifPresent(valoracionRepository::delete);
+        if (id == null) return;
+        Optional<Valoracion> opt = valoracionRepository.findById(id);
+        opt.ifPresent(v -> {
+            Ruta r = v.getRuta();
+            if (r != null && r.getValoraciones() != null) r.getValoraciones().remove(v);
+            valoracionRepository.delete(v);
+        });
     }
+
 }

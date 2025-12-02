@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.PersistenceException;
@@ -23,6 +22,9 @@ import unex.cume.mdai.SendaLite.model.Valoracion;
 import unex.cume.mdai.SendaLite.service.ValoracionService;
 import unex.cume.mdai.SendaLite.service.UsuarioService;
 import unex.cume.mdai.SendaLite.service.RutaService;
+import unex.cume.mdai.SendaLite.repository.ValoracionRepository;
+import unex.cume.mdai.SendaLite.repository.UsuarioRepository;
+import unex.cume.mdai.SendaLite.repository.RutaRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
@@ -30,7 +32,7 @@ import unex.cume.mdai.SendaLite.service.RutaService;
 public class ValoracionTest {
 
 	@Autowired
-	private TestEntityManager entityManager;
+	private ValoracionRepository valoracionRepository;
 
 	@Autowired
 	private ValoracionService valoracionService;
@@ -41,6 +43,12 @@ public class ValoracionTest {
 	@Autowired
 	private RutaService rutaService;
 
+	@Autowired
+	private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private RutaRepository rutaRepository;
+
 	@Test
 	void testUnicidadUsuarioRuta() {
 		Usuario user = new Usuario();
@@ -49,7 +57,7 @@ public class ValoracionTest {
 		user.setNombre("Unique User");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Unique");
@@ -60,7 +68,7 @@ public class ValoracionTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v1 = new Valoracion();
 		v1.setPuntuacion(9);
@@ -68,7 +76,7 @@ public class ValoracionTest {
 		v1.setUsuario(user);
 		v1.setRuta(ruta);
 		valoracionService.anadirValoracion(v1);
-		entityManager.flush();
+		valoracionRepository.flush();
 
 		Valoracion v2 = new Valoracion();
 		v2.setPuntuacion(8);
@@ -79,7 +87,7 @@ public class ValoracionTest {
 			// la violación de unicidad puede ocurrir al persistir o al hacer flush,
 			// por eso envolvemos ambas operaciones
 			valoracionService.anadirValoracion(v2);
-			entityManager.flush();
+			valoracionRepository.flush();
 		});
 	}
 
@@ -91,7 +99,7 @@ public class ValoracionTest {
 		user.setNombre("Persist User");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Persist");
@@ -102,7 +110,7 @@ public class ValoracionTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(7);
@@ -111,13 +119,9 @@ public class ValoracionTest {
 		v.setRuta(ruta);
 		valoracionService.anadirValoracion(v);
 
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		valoracionRepository.flush();
 
-		List<Valoracion> list = entityManager.getEntityManager()
-				.createQuery("SELECT v FROM Valoracion v WHERE v.usuario.email = :email", Valoracion.class)
-				.setParameter("email", "persist@example.com")
-				.getResultList();
+		List<Valoracion> list = valoracionRepository.findByRutaIdRuta(ruta.getIdRuta());
 		assertThat(list).hasSize(1);
 		assertThat(list.get(0).getPuntuacion()).isEqualTo(7);
 	}
@@ -131,7 +135,7 @@ public class ValoracionTest {
 		user.setNombre("Basic Val");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Basic");
@@ -142,7 +146,7 @@ public class ValoracionTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(6);
@@ -150,12 +154,10 @@ public class ValoracionTest {
 		v.setUsuario(user);
 		v.setRuta(ruta);
 		valoracionService.anadirValoracion(v);
-		entityManager.getEntityManager().flush();
+		valoracionRepository.flush();
 		Long id = v.getIdValoracion();
 
-		entityManager.clear();
-
-		Valoracion found = entityManager.getEntityManager().find(Valoracion.class, id);
+		Valoracion found = valoracionRepository.findById(id).orElse(null);
 		assertThat(found).isNotNull();
 		assertThat(found.getPuntuacion()).isEqualTo(6);
 	}
@@ -168,7 +170,7 @@ public class ValoracionTest {
 		user.setNombre("Del Val");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Del Val");
@@ -179,7 +181,7 @@ public class ValoracionTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(5);
@@ -187,16 +189,14 @@ public class ValoracionTest {
 		v.setUsuario(user);
 		v.setRuta(ruta);
 		valoracionService.anadirValoracion(v);
-		entityManager.getEntityManager().flush();
+		valoracionRepository.flush();
 		Long id = v.getIdValoracion();
 
-		entityManager.getEntityManager().clear();
-
-		Valoracion toRemove = entityManager.getEntityManager().find(Valoracion.class, id);
+		Valoracion toRemove = valoracionRepository.findById(id).orElse(null);
 		valoracionService.eliminarValoracion(toRemove);
-		entityManager.getEntityManager().flush();
+		valoracionRepository.flush();
 
-		Valoracion shouldBeNull = entityManager.getEntityManager().find(Valoracion.class, id);
+		Valoracion shouldBeNull = valoracionRepository.findById(id).orElse(null);
 		assertThat(shouldBeNull).isNull();
 	}
 
@@ -208,7 +208,7 @@ public class ValoracionTest {
 		user.setNombre("Mod Val");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Mod Val");
@@ -219,7 +219,7 @@ public class ValoracionTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(4);
@@ -227,15 +227,13 @@ public class ValoracionTest {
 		v.setUsuario(user);
 		v.setRuta(ruta);
 		valoracionService.anadirValoracion(v);
-		entityManager.getEntityManager().flush();
+		valoracionRepository.flush();
 
 		// modificar mediante servicio
 		v.setPuntuacion(10);
 		valoracionService.modificarValoracion(v);
 		Long id = v.getIdValoracion();
-		entityManager.getEntityManager().clear();
-
-		Valoracion updated = entityManager.getEntityManager().find(Valoracion.class, id);
+		Valoracion updated = valoracionRepository.findById(id).orElse(null);
 		assertThat(updated.getPuntuacion()).isEqualTo(10);
 	}
 }

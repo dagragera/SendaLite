@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import unex.cume.mdai.SendaLite.model.Comentario;
@@ -21,6 +20,8 @@ import unex.cume.mdai.SendaLite.model.TipoActividad;
 import unex.cume.mdai.SendaLite.service.ComentarioService;
 import unex.cume.mdai.SendaLite.service.RutaService;
 import unex.cume.mdai.SendaLite.service.UsuarioService;
+import unex.cume.mdai.SendaLite.repository.ComentarioRepository;
+import unex.cume.mdai.SendaLite.repository.RutaRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE) // ajusta si quieres H2 en memoria
@@ -28,7 +29,7 @@ import unex.cume.mdai.SendaLite.service.UsuarioService;
 public class ComentarioTest {
 
 	@Autowired
-	private TestEntityManager entityManager;
+	private ComentarioRepository comentarioRepository;
 
 	@Autowired
 	private ComentarioService comentarioService;
@@ -39,6 +40,9 @@ public class ComentarioTest {
 	@Autowired
 	private UsuarioService usuarioService;
 
+	@Autowired
+	private RutaRepository rutaRepository;
+
 	@Test
 	void testPersistirComentarioYConsulta() {
 		Usuario user = new Usuario();
@@ -47,7 +51,7 @@ public class ComentarioTest {
 		user.setNombre("Usuario Coment");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Comentarios");
@@ -58,22 +62,13 @@ public class ComentarioTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setComentarios(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
-		Comentario c = new Comentario();
-		c.setTexto("Comentario de prueba");
-		c.setFechaComentario(LocalDate.now());
-		c.setUsuario(user);
-		c.setRuta(ruta);
-		// persistir usando el servicio
-		comentarioService.anadirComentario(c);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		// Crear y persistir usando el método seguro por ids
+		Comentario saved = comentarioService.create(ruta.getIdRuta(), user.getIdUsuario(), "Comentario de prueba");
+		comentarioRepository.flush();
 
-		java.util.List<Comentario> resultados = entityManager.getEntityManager()
-				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.titulo = :t", Comentario.class)
-				.setParameter("t", "Ruta Comentarios")
-				.getResultList();
+		java.util.List<Comentario> resultados = comentarioRepository.findByRutaIdRuta(ruta.getIdRuta());
 		assertThat(resultados).hasSize(1);
 		assertThat(resultados.get(0).getTexto()).isEqualTo("Comentario de prueba");
 	}
@@ -86,7 +81,7 @@ public class ComentarioTest {
 		user.setNombre("Usuario Del");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta a borrar comentarios");
@@ -97,31 +92,18 @@ public class ComentarioTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setComentarios(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
-		Comentario c1 = new Comentario();
-		c1.setTexto("Comentario 1");
-		c1.setFechaComentario(LocalDate.now());
-		c1.setUsuario(user);
-		c1.setRuta(ruta);
-		comentarioService.anadirComentario(c1);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		// crear comentario mediante servicio (por ids)
+		Comentario saved = comentarioService.create(ruta.getIdRuta(), user.getIdUsuario(), "Comentario 1");
+		comentarioRepository.flush();
 
-		Ruta persisted = entityManager.getEntityManager()
-				.createQuery("SELECT r FROM Ruta r WHERE r.titulo = :t", Ruta.class)
-				.setParameter("t", "Ruta a borrar comentarios")
-				.getSingleResult();
-		Long rutaId = persisted.getIdRuta();
+		Long rutaId = ruta.getIdRuta();
 
-		rutaService.eliminarRuta(persisted);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		rutaService.eliminarRutaPorId(rutaId);
+		comentarioRepository.flush();
 
-		java.util.List<Comentario> after = entityManager.getEntityManager()
-				.createQuery("SELECT c FROM Comentario c WHERE c.ruta.idRuta = :rid", Comentario.class)
-				.setParameter("rid", rutaId)
-				.getResultList();
+		java.util.List<Comentario> after = comentarioRepository.findByRutaIdRuta(rutaId);
 		assertThat(after).isEmpty();
 	}
 
@@ -133,7 +115,7 @@ public class ComentarioTest {
 		user.setNombre("Basic Commenter");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Basic Comment");
@@ -144,21 +126,12 @@ public class ComentarioTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setComentarios(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
-		Comentario c = new Comentario();
-		c.setTexto("Comentario básico");
-		c.setFechaComentario(LocalDate.now());
-		c.setUsuario(user);
-		c.setRuta(ruta);
-		comentarioService.anadirComentario(c);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		Comentario saved = comentarioService.create(ruta.getIdRuta(), user.getIdUsuario(), "Comentario básico");
+		comentarioRepository.flush();
 
-		java.util.List<Comentario> results = entityManager.getEntityManager()
-				.createQuery("SELECT c FROM Comentario c WHERE c.texto = :txt", Comentario.class)
-				.setParameter("txt", "Comentario básico")
-				.getResultList();
+		java.util.List<Comentario> results = comentarioRepository.findByRutaIdRuta(ruta.getIdRuta());
 		assertThat(results).hasSize(1);
 		assertThat(results.get(0).getTexto()).isEqualTo("Comentario básico");
 	}
@@ -171,7 +144,7 @@ public class ComentarioTest {
 		user.setNombre("Del Commenter");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Del Comment");
@@ -182,24 +155,18 @@ public class ComentarioTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setComentarios(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
-		Comentario c = new Comentario();
-		c.setTexto("A eliminar");
-		c.setFechaComentario(LocalDate.now());
-		c.setUsuario(user);
-		c.setRuta(ruta);
-		comentarioService.anadirComentario(c);
-		entityManager.getEntityManager().flush();
-		Long id = c.getIdComentario();
+		Comentario saved = comentarioService.create(ruta.getIdRuta(), user.getIdUsuario(), "A eliminar");
+		comentarioRepository.flush();
+		Long id = saved.getIdComentario();
 
-		entityManager.clear();
 
-		Comentario toRemove = entityManager.getEntityManager().find(Comentario.class, id);
+		Comentario toRemove = comentarioRepository.findById(id).orElse(null);
 		comentarioService.eliminarComentario(toRemove);
-		entityManager.getEntityManager().flush();
+		comentarioRepository.flush();
 
-		Comentario shouldBeNull = entityManager.getEntityManager().find(Comentario.class, id);
+		Comentario shouldBeNull = comentarioRepository.findById(id).orElse(null);
 		assertThat(shouldBeNull).isNull();
 	}
 
@@ -211,7 +178,7 @@ public class ComentarioTest {
 		user.setNombre("Mod Commenter");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Mod Comment");
@@ -222,23 +189,16 @@ public class ComentarioTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setComentarios(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
-		Comentario c = new Comentario();
-		c.setTexto("Original");
-		c.setFechaComentario(LocalDate.now());
-		c.setUsuario(user);
-		c.setRuta(ruta);
-		comentarioService.anadirComentario(c);
-		entityManager.getEntityManager().flush();
+		Comentario saved = comentarioService.create(ruta.getIdRuta(), user.getIdUsuario(), "Original");
+		comentarioRepository.flush();
 
-		// modificar mediante servicio
-		c.setTexto("Modificado");
-		comentarioService.modificarComentario(c);
-		Long id = c.getIdComentario();
-		entityManager.clear();
+		// modificar mediante servicio usando la API por id
+		comentarioService.update(saved.getIdComentario(), "Modificado");
+		Long id = saved.getIdComentario();
 
-		Comentario found = entityManager.getEntityManager().find(Comentario.class, id);
+		Comentario found = comentarioRepository.findById(id).orElse(null);
 		assertThat(found.getTexto()).isEqualTo("Modificado");
 	}
 }

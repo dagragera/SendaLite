@@ -31,7 +31,25 @@ public class ComentarioService {
     public Comentario anadirComentario(Comentario comentario) {
         if (comentario == null) throw new IllegalArgumentException("Comentario nulo");
         if (comentario.getFechaComentario() == null) comentario.setFechaComentario(LocalDate.now());
-        return comentarioRepository.save(comentario);
+
+        // Si el comentario trae referencias a usuario/ruta, asegurarlas como entidades gestionadas
+        if (comentario.getUsuario() != null && comentario.getUsuario().getIdUsuario() != null) {
+            Long uid = comentario.getUsuario().getIdUsuario();
+            Usuario u = usuarioRepository.findById(uid).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + uid));
+            comentario.setUsuario(u);
+        }
+        if (comentario.getRuta() != null && comentario.getRuta().getIdRuta() != null) {
+            Long rid = comentario.getRuta().getIdRuta();
+            Ruta r = rutaRepository.findById(rid).orElseThrow(() -> new IllegalArgumentException("Ruta no encontrada: " + rid));
+            comentario.setRuta(r);
+        }
+
+        Comentario saved = comentarioRepository.save(comentario);
+        // Mantener la relación bidireccional
+        if (saved.getRuta() != null && saved.getRuta().getComentarios() != null) {
+            saved.getRuta().getComentarios().add(saved);
+        }
+        return saved;
     }
 
     @Transactional
@@ -44,7 +62,21 @@ public class ComentarioService {
 
     @Transactional
     public void eliminarComentario(Comentario comentario) {
-        comentarioRepository.delete(comentario);
+        if (comentario == null) return;
+        Long id = comentario.getIdComentario();
+        if (id == null) {
+            comentarioRepository.delete(comentario);
+            comentarioRepository.flush();
+            return;
+        }
+        comentarioRepository.findById(id).ifPresent(c -> {
+            Ruta r = c.getRuta();
+            if (r != null && r.getComentarios() != null) {
+                r.getComentarios().remove(c);
+            }
+            comentarioRepository.deleteById(id);
+            comentarioRepository.flush();
+        });
     }
 
     @Transactional
@@ -73,7 +105,9 @@ public class ComentarioService {
         c.setUsuario(usuario);
         c.setTexto(texto);
         c.setFechaComentario(LocalDate.now());
-        return comentarioRepository.save(c);
+        Comentario saved = comentarioRepository.save(c);
+        if (ruta.getComentarios() != null) ruta.getComentarios().add(saved);
+        return saved;
     }
 
     @Transactional
@@ -91,6 +125,12 @@ public class ComentarioService {
 
     @Transactional
     public void delete(Long comentarioId) {
-        comentarioRepository.findById(comentarioId).ifPresent(comentarioRepository::delete);
+        if (comentarioId == null) return;
+        comentarioRepository.findById(comentarioId).ifPresent(c -> {
+            Ruta r = c.getRuta();
+            if (r != null && r.getComentarios() != null) r.getComentarios().remove(c);
+            comentarioRepository.deleteById(comentarioId);
+            comentarioRepository.flush();
+        });
     }
 }

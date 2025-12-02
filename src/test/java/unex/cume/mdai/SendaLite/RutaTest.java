@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import unex.cume.mdai.SendaLite.model.Ruta;
@@ -21,6 +20,8 @@ import unex.cume.mdai.SendaLite.model.TipoActividad;
 import unex.cume.mdai.SendaLite.service.RutaService;
 import unex.cume.mdai.SendaLite.service.UsuarioService;
 import unex.cume.mdai.SendaLite.service.ValoracionService;
+import unex.cume.mdai.SendaLite.repository.RutaRepository;
+import unex.cume.mdai.SendaLite.repository.ValoracionRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // usar BD embebida (H2) para tests aislados
@@ -28,7 +29,7 @@ import unex.cume.mdai.SendaLite.service.ValoracionService;
 public class RutaTest {
 
 	@Autowired
-	private TestEntityManager entityManager;
+	private RutaRepository rutaRepository;
 
 	@Autowired
 	private RutaService rutaService;
@@ -39,6 +40,9 @@ public class RutaTest {
 	@Autowired
 	private ValoracionService valoracionService;
 
+	@Autowired
+	private ValoracionRepository valoracionRepository;
+
 	@Test
 	void testPersistirRutaConValoraciones() {
 		Usuario user = new Usuario();
@@ -47,7 +51,7 @@ public class RutaTest {
 		user.setNombre("Autor Valoracion");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta con valoraciones");
@@ -58,7 +62,7 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v = new Valoracion();
 		v.setPuntuacion(8);
@@ -67,12 +71,9 @@ public class RutaTest {
 		v.setRuta(ruta);
 		valoracionService.anadirValoracion(v);
 
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		rutaRepository.flush();
 
-		List<Valoracion> valoraciones = entityManager.getEntityManager()
-				.createQuery("SELECT v FROM Valoracion v", Valoracion.class)
-				.getResultList();
+		List<Valoracion> valoraciones = valoracionRepository.findAll();
 		assertThat(valoraciones).hasSize(1);
 		assertThat(valoraciones.get(0).getPuntuacion()).isEqualTo(8);
 	}
@@ -85,7 +86,7 @@ public class RutaTest {
 		user.setNombre("Autor Del");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta a eliminar");
@@ -96,7 +97,7 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		ruta.setValoraciones(new HashSet<>());
-		rutaService.anadirRuta(ruta);
+		ruta = rutaService.anadirRuta(ruta);
 
 		Valoracion v1 = new Valoracion();
 		v1.setPuntuacion(7);
@@ -104,24 +105,18 @@ public class RutaTest {
 		v1.setUsuario(user);
 		v1.setRuta(ruta);
 		valoracionService.anadirValoracion(v1);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		rutaRepository.flush();
 
-		Ruta persisted = entityManager.getEntityManager()
-				.createQuery("SELECT r FROM Ruta r WHERE r.titulo = :t", Ruta.class)
-				.setParameter("t", "Ruta a eliminar")
-				.getSingleResult();
-		Long rutaId = persisted.getIdRuta();
 
-		rutaService.eliminarRuta(persisted);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		java.util.List<Ruta> persisted = rutaRepository.findByTituloContainingIgnoreCase("Ruta a eliminar");
+		assertThat(persisted).isNotEmpty();
+		Long rutaId = persisted.get(0).getIdRuta();
 
-		List<Valoracion> after = entityManager.getEntityManager()
-				.createQuery("SELECT v FROM Valoracion v WHERE v.ruta.idRuta = :rid", Valoracion.class)
-				.setParameter("rid", rutaId)
-				.getResultList();
-		assertThat(after).isEmpty();
+		rutaService.eliminarRutaPorId(rutaId);
+ 		rutaRepository.flush();
+
+ 		List<Valoracion> after = valoracionRepository.findByRutaIdRuta(rutaId);
+ 		assertThat(after).isEmpty();
 	}
 
 	@Test
@@ -132,7 +127,7 @@ public class RutaTest {
 		user.setNombre("Basic Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Basica");
@@ -143,13 +138,9 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		rutaService.anadirRuta(ruta);
-		entityManager.getEntityManager().flush();
-		entityManager.clear();
+		rutaRepository.flush();
 
-		List<Ruta> found = entityManager.getEntityManager()
-				.createQuery("SELECT r FROM Ruta r WHERE r.titulo = :t", Ruta.class)
-				.setParameter("t", "Ruta Basica")
-				.getResultList();
+		List<Ruta> found = rutaRepository.findByTituloContainingIgnoreCase("Ruta Basica");
 		assertThat(found).hasSize(1);
 		assertThat(found.get(0).getTitulo()).isEqualTo("Ruta Basica");
 	}
@@ -162,7 +153,7 @@ public class RutaTest {
 		user.setNombre("Del Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta a borrar Base");
@@ -173,16 +164,14 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		rutaService.anadirRuta(ruta);
-		entityManager.getEntityManager().flush();
+		rutaRepository.flush();
 		Long id = ruta.getIdRuta();
 
-		entityManager.clear();
-
-		Ruta toRemove = entityManager.getEntityManager().find(Ruta.class, id);
+		Ruta toRemove = rutaRepository.findById(id).orElse(null);
 		rutaService.eliminarRuta(toRemove);
-		entityManager.getEntityManager().flush();
+		rutaRepository.flush();
 
-		Ruta shouldBeNull = entityManager.getEntityManager().find(Ruta.class, id);
+		Ruta shouldBeNull = rutaRepository.findById(id).orElse(null);
 		assertThat(shouldBeNull).isNull();
 	}
 
@@ -194,7 +183,7 @@ public class RutaTest {
 		user.setNombre("Mod Ruta");
 		user.setFechaRegistro(LocalDate.now());
 		user.setActivo(true);
-		usuarioService.anadirUsuario(user);
+		user = usuarioService.anadirUsuario(user);
 
 		Ruta ruta = new Ruta();
 		ruta.setTitulo("Ruta Original");
@@ -205,15 +194,14 @@ public class RutaTest {
         ruta.setTipoActividad(TipoActividad.SENDERISMO);
 		ruta.setAutor(user);
 		rutaService.anadirRuta(ruta);
-		entityManager.getEntityManager().flush();
+		rutaRepository.flush();
 
 		// modificar mediante servicio
 		ruta.setTitulo("Ruta Modificada");
 		rutaService.modificarRuta(ruta);
 		Long id = ruta.getIdRuta();
-		entityManager.clear();
 
-		Ruta found = entityManager.getEntityManager().find(Ruta.class, id);
+		Ruta found = rutaRepository.findById(id).orElse(null);
 		assertThat(found.getTitulo()).isEqualTo("Ruta Modificada");
 	}
 }

@@ -90,7 +90,9 @@ public class RutaService {
 
     @Transactional
     public void eliminarRuta(Ruta ruta) {
-        rutaRepository.delete(ruta);
+        if (ruta == null || ruta.getIdRuta() == null) return;
+        Optional<Ruta> managed = rutaRepository.findById(ruta.getIdRuta());
+        managed.ifPresent(rutaRepository::delete);
     }
 
     @Transactional
@@ -98,6 +100,7 @@ public class RutaService {
         if (idRuta == null) return false;
         Optional<Ruta> r = rutaRepository.findById(idRuta);
         if (r.isEmpty()) return false;
+        // eliminar la entidad gestionada para que JPA maneje correctamente las cascadas
         rutaRepository.delete(r.get());
         return true;
     }
