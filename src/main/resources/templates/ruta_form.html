@@ -14,7 +14,6 @@
     <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''" th:disabled="${currentUser == null}"></textarea></label><br/>
     <label>Dificultad:
         <select id="dificultad" th:disabled="${currentUser == null}">
-            <option value="">(opcional)</option>
             <option value="FACIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'FACIL'}">Fácil</option>
             <option value="MEDIA" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'MEDIA'}">Media</option>
             <option value="DIFICIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'DIFICIL'}">Difícil</option>
@@ -23,7 +22,6 @@
 
     <label>Tipo actividad:
         <select id="tipoActividad" th:disabled="${currentUser == null}">
-            <option value="">(opcional)</option>
             <option value="SENDERISMO" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'SENDERISMO'}">Senderismo</option>
             <option value="CICLISMO" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'CICLISMO'}">Ciclismo</option>
             <option value="CORRER" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'CORRER'}">Correr</option>

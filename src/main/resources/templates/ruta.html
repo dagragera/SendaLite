@@ -26,7 +26,9 @@
             <button type="button" class="read-more-toggle" style="display:none" aria-expanded="false" aria-controls="descripcion">Leer más</button>
             <div class="row">
                 <div class="field"><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></div>
-                <div class="field"><strong>Dificultad:</strong> <span th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span></div>
+                <div class="field" th:attr="data-dificultad=${ruta.dificultad != null ? ruta.dificultad.name() : ''}"><strong>Dificultad:</strong>
+                    <span class="difficulty-badge" th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span>
+                </div>
                 <div class="field"><strong>Actividad:</strong> <span th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : 'No especificado'}">Actividad</span></div>
             </div>
             <div class="row">
