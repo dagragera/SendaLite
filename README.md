@@ -323,5 +323,34 @@ Nota: La autenticación para los endpoints que lo requieren se maneja con el sis
 
 ---
 
+## Mejoras desde la última entrega
 
+A continuación se resumen las mejoras realizadas desde la última entrega (cambios front-end y pequeños ajustes de comportamiento):
+
+- Arreglado el campo "opcional" al crear una ruta: ahora el campo que puede marcarse como opcional funciona correctamente en el formulario de creación/edición y no impide el envío cuando se deja desmarcado; la validación en servidor y cliente se ha ajustado para reflejar este comportamiento.
+
+- Mejoras generales en CSS: se han realizado ajustes de paddings, tipografía y contraste para mejorar la legibilidad y la apariencia en móviles y escritorio. Se han afinado estilos de tarjetas, botones y listas para una experiencia más consistente.
+
+- Zona clicable en las tarjetas de ruta: ahora se puede pinchar en cualquier parte de la tarjeta o elemento de la lista para abrir la ficha de la ruta (mejora de usabilidad). Esto facilita la navegación especialmente desde dispositivos táctiles.
+
+- Código de colores y barra de dificultad: añadido un indicativo visual de dificultad con colores y una pequeña barra/progresión (ej. fácil — verde, media — naranja, difícil — rojo). La barra aparece tanto en la lista de rutas como en la ficha de la ruta para ofrecer una lectura rápida del nivel.
+
+Archivos modificados (resumen):
+
+- `src/main/resources/static/css/style.css` — ajustes de estilos generales, colores y barra de dificultad.
+- `src/main/resources/templates/index.html` — tarjeta/listado de rutas: zona clicable y visual de dificultad.
+- `src/main/resources/templates/ruta.html` — ficha de ruta: barra de dificultad y presentación mejorada.
+- `src/main/resources/templates/fragments/common.html` — pequeños ajustes visuales y fallback del logo.
+
+Cómo comprobar los cambios rápidamente:
+
+1. Para comprobar estos cambios, igual que para ejecutar la aplicación, arranca la aplicación desde la raíz del proyecto (usar el wrapper de Maven):
+
+```powershell
+.\mvnw.cmd spring-boot:run -DskipTests
+```
+
+2. Abre http://localhost:8080 y revisa el listado de rutas:
+   - Pulsa en cualquier parte de una tarjeta para ir a su ficha.
+   - Observa la barra y el color de dificultad en las tarjetas.
 
