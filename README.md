@@ -354,3 +354,12 @@ Cómo comprobar los cambios rápidamente:
    - Pulsa en cualquier parte de una tarjeta para ir a su ficha.
    - Observa la barra y el color de dificultad en las tarjetas.
 
+
+## DeepSeek
+
+Esta sección documenta las conversaciones mantenidas con el asistente de IA DeepSeek durante el desarrollo del proyecto SendaLite, ordenadas cronológicamente.
+
+- **[Actividad 1: Maven](https://chat.deepseek.com/a/chat/s/f9d840da-c6ec-48b0-b003-2539ab6514fd)**: Guía para instalar Maven y configurar el entorno de desarrollo para el proyecto Spring Boot.
+- **[Actividad 2: GitHub](https://chat.deepseek.com/a/chat/s/6adb36af-448b-4a6b-97ce-4fba4227f1b1)**: Instrucciones para usar GitHub Desktop, subir el proyecto al repositorio y añadir colaboradores.
+- **[Actividad 1: Maven](https://chat.deepseek.com/a/chat/s/e0085228-5368-41f9-8e4f-90409a9c1dbe)**: Asistencia en la redacción del README, organización de secciones y documentación de funcionalidades de SendaLite.
+
